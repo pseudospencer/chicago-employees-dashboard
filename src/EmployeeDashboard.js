@@ -6,17 +6,26 @@ class EmployeeDashboard extends Component {
         super(props);
         this.state = {
             currentView : null,
-            dataIsLoaded : false,
-            apiPageLength : 100,
-            minApiPage : 1,
-            currentApiPage : 1,
-            apiData : null,
-            currentDataIndex: null,
-            focusedEmployeeIndex : null,
-            focusedEmployeeId : null,
+            api : {
+                dataIsLoaded : false,
+                pageLength : 25,
+                minPage : 1,
+                currentPage : 1,
+                currentDataIndex : null,
+                data : null,
+            },
+            table : {
+                pageLength : 25,
+                minPage : 0,
+                maxPage : 0,
+                currentPage : 0,
+                uiPage: 1,
+            },
+            focusedEmployee : {
+                index : null,
+                id : null,
+            },
             filtersApplied : null,
-            maxEmployeeId : null,
-            maxApiPage : null,
         };
         this.fetchApiData = this.fetchApiData.bind(this);
         this.handleFetchedApiData = this.handleFetchedApiData.bind(this);
@@ -26,7 +35,7 @@ class EmployeeDashboard extends Component {
         this.handleKeyPress = this.handleKeyPress.bind(this);
     }
     fetchApiData(pageNum = 1, pageLength = 100) {
-        console.log("Fetch Data");
+        // console.log("Fetch Data");
         const baseApiUrl = "https://dt-interviews.appspot.com/"
         const searchParams = "?page=" + pageNum + "&per_page=" + pageLength;
         const requestUrl = baseApiUrl + searchParams;
@@ -39,63 +48,80 @@ class EmployeeDashboard extends Component {
                 },
                 (error) => {
                     console.log("Error!", error);
+                    const { api } = this.state;
                     this.setState({
-                        dataIsLoaded : true,
-                        error
+                        api : {
+                            ...api,
+                            dataIsLoaded : true,
+                            error,
+                        }
                     });
                     return error;
                 }
             )
     }
-    handleFetchedApiData(data) {
-        console.log("Got apiData", data);
-        const {apiData, dataIsLoaded} = this.state;
-        if (dataIsLoaded === false) {
+    handleFetchedApiData(newData) {
+        console.log("Got apiData", newData);
+        const { api } = this.state;
+
+        if (api.dataIsLoaded === false) {
             this.setState({
-                apiData : [data],
-                dataIsLoaded: true,
-                currentDataIndex: 0,
+                api : { ...api,
+                    data : [newData],
+                    dataIsLoaded: true,
+                    currentDataIndex: 0,
+                },
             })
         } else {
             this.setState({
-                apiData : [...apiData, data],
+                api : {
+                    ...api,
+                    data : [...api.data, newData],
+                }
             })
         }
     }
     loadDataIfNeeded() {
-        const { apiData, dataIsLoaded, currentApiPage, apiPageLength, currentDataIndex } = this.state;
+        const { api } = this.state;
 
-        if (!dataIsLoaded && apiData === null) {
-            this.fetchApiData(currentApiPage, apiPageLength);
+        if (!api.dataIsLoaded && api.data === null) {
+            console.log("fetching first data");
+            this.fetchApiData(api.currentPage, api.pageLength);
         }
 
-        if (dataIsLoaded && currentDataIndex >= apiData.length - 1) {
-            this.fetchApiData(currentApiPage +1, apiPageLength)
+        if (api.dataIsLoaded && api.currentDataIndex >= api.data.length - 1) {
+            console.log("fetching more data, currentPage", api.currentPage);
+            this.fetchApiData(api.currentPage +1, api.pageLength);
         }
-
     }
     incrementCurrentData() {
-        const { currentDataIndex, currentApiPage } = this.state;
+        const { api } = this.state;
         this.setState({
-            currentDataIndex : currentDataIndex + 1,
-            currentApiPage : currentApiPage + 1,
+            api : {
+                ...api,
+                currentDataIndex : api.currentDataIndex + 1,
+                currentPage : api.currentPage + 1,
+            }
         });
     }
     decrementCurrentData() {
-        const { currentDataIndex, currentApiPage } = this.state;
-        if (currentDataIndex > 0) {
-            const { currentDataIndex } = this.state;
+        const { api } = this.state;
+        // never go below 0
+        if (api.currentDataIndex > 0) {
             this.setState({
-                currentDataIndex : currentDataIndex - 1,
-                currentApiPage : currentApiPage - 1,
+                api : {
+                    ...api,
+                    currentDataIndex : api.currentDataIndex - 1,
+                    currentPage : api.currentPage - 1,
+                }
             });
         }
     }
     handleKeyPress(e) {
         const key = e.key.toUpperCase();
         console.log("keypressed", key);
-        const { focusedEmployeeIndex, apiData, currentDataIndex } = this.state;
-        const currentData = apiData[currentDataIndex];
+        const { api, focusedEmployee } = this.state;
+        const currentData = api.data[api.currentDataIndex];
         let newFocusedEmployeeIndex;
 
         const logEmployeeIndexAndId = () => {
@@ -103,40 +129,48 @@ class EmployeeDashboard extends Component {
         }
         const setEmployeeIndexAndId = (newFocusedEmployeeIndex) => {
             this.setState({
-                focusedEmployeeIndex: newFocusedEmployeeIndex,
-                focusedEmployeeId: currentData[newFocusedEmployeeIndex].id,
+                focusedEmployee : {
+                    ...focusedEmployee,
+                    index : newFocusedEmployeeIndex,
+                    id : currentData[newFocusedEmployeeIndex].id
+                },
             });
         }
 
-        if (focusedEmployeeIndex === null) {
-            // Need to create an index.
+        if (focusedEmployee.index === null) {
             if (key === "ARROWUP" || key === "ARROWDOWN" || key === "ENTER") {
                 newFocusedEmployeeIndex = 0;
                 logEmployeeIndexAndId();
                 setEmployeeIndexAndId(newFocusedEmployeeIndex);
             }
         } else if (key === "ARROWUP") {
-            if (focusedEmployeeIndex > 0) {
+            if (focusedEmployee.index > 0) {
                 // Decrement
-                newFocusedEmployeeIndex = focusedEmployeeIndex - 1;
+                newFocusedEmployeeIndex = focusedEmployee.index - 1;
                 logEmployeeIndexAndId();
                 setEmployeeIndexAndId(newFocusedEmployeeIndex);
-            } else if (focusedEmployeeIndex <= 0 && currentDataIndex > 0) {
+
+            } else if (focusedEmployee.Index <= 0 && api.currentDataIndex > 0) {
                 // decrement data and set index to data.length
                 this.decrementCurrentData();
                 newFocusedEmployeeIndex = currentData.length - 1;
                 setEmployeeIndexAndId(newFocusedEmployeeIndex);
             }
         } else if (key === "ARROWDOWN") {
-            if (focusedEmployeeIndex < currentData.length - 1) {
+            if (focusedEmployee.index < currentData.length - 1) {
                 // increment
-                newFocusedEmployeeIndex = focusedEmployeeIndex + 1;
+                newFocusedEmployeeIndex = focusedEmployee.index + 1;
                 logEmployeeIndexAndId();
                 setEmployeeIndexAndId(newFocusedEmployeeIndex);
             } else {
+                // NOTE:  was working on this when I started having the side effects.
+
                 // increment data and reset index to 0
-                this.incrementCurrentData();
+                console.log("incrementData, set focusedEmployeeIndex to 0")
                 newFocusedEmployeeIndex = 0;
+                logEmployeeIndexAndId();
+                this.incrementCurrentData();
+                console.log("increment action initiated", currentData[0].id, currentData)
                 setEmployeeIndexAndId(newFocusedEmployeeIndex);
             }
         } else if (key === "ENTER") {
@@ -144,20 +178,21 @@ class EmployeeDashboard extends Component {
         }
     }
     componentDidMount() {
+        console.log("EmployeeDashboard componentDidMount");
         this.loadDataIfNeeded();
         document.addEventListener("keydown", this.handleKeyPress );
     }
     componentDidUpdate() {
+        console.log("EmployeeDashboard componentDidUpdate");
         this.loadDataIfNeeded();
     }
     componentWillUnmount() {
-        console.log("componentWillUnmount");
+        console.log("EmployeeDashboard componentWillUnmount");
         document.removeEventListener("keydown", this.handleKeyPress() );
     }
     render() {
-        const { dataIsLoaded, apiData, currentDataIndex, currentApiPage, apiPageLength } = this.state;
-
-        if (this.state.error) {
+        const { api, focusedEmployee  } = this.state;
+        if (api.error) {
             return(
                 <div id="employee-dashboard">
                     <h1>City of Chicago Employees Dashboard</h1>
@@ -165,7 +200,7 @@ class EmployeeDashboard extends Component {
                 </div>
             )
         }
-        else if (dataIsLoaded === false) {
+        else if (api.dataIsLoaded === false) {
             return(
                 <div id="employee-dashboard">
                     <h1>City of Chicago Employees Dashboard</h1>
@@ -173,22 +208,23 @@ class EmployeeDashboard extends Component {
                 </div>
             )
         }
-        else if (dataIsLoaded === true) {
-            const currentData = apiData[currentDataIndex];
+        else if (api.dataIsLoaded === true) {
+            const currentData = api.data[api.currentDataIndex];
             return(
                 <div id="employee-dashboard">
                     <h1>City of Chicago Employees Dashboard</h1>
 
-                    <p>{"API Page " + currentApiPage}</p>
+                    <p>{"API Page " + api.currentPage}</p>
                     {/* <button type="button" onClick={this.decrementCurrentData}>Previous Page</button>
                     <button type="button" onClick={this.incrementCurrentData}>Next Page</button> */}
                     <hr></hr>
-                    <EmployeeTableView
+                    {/* <EmployeeTableView
                         currentData={currentData}
                         apiPageLength ={apiPageLength}
                         incrementData={this.incrementCurrentData}
                         decrementData={this.decrementCurrentData}
-                    />
+                        focusedEmployeeId={focusedEmployeeId}
+                    /> */}
                 </div>
             )
 
