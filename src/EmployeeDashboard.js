@@ -94,6 +94,8 @@ class EmployeeDashboard extends Component {
         const key = e.key.toUpperCase();
         console.log("keypressed", key);
         const { focusedEmployeeId } = this.state;
+
+        if (focusedEmployeeId === null)
     }
     componentDidMount() {
         this.loadDataIfNeeded();
@@ -107,7 +109,7 @@ class EmployeeDashboard extends Component {
         document.removeEventListener("keydown", this.handleKeyPress() );
     }
     render() {
-        const { dataIsLoaded, apiData, currentApiPage, apiPageLength } = this.state;
+        const { dataIsLoaded, apiData, currentDataIndex, currentApiPage, apiPageLength } = this.state;
 
         if (this.state.error) {
             return(
@@ -126,7 +128,6 @@ class EmployeeDashboard extends Component {
             )
         }
         else if (dataIsLoaded === true) {
-            const { apiData, currentDataIndex } = this.state;
             const currentData = apiData[currentDataIndex];
             console.log("apiData", apiData, "currentDataIndex", currentDataIndex, "currentData", currentData);
             return(
