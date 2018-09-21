@@ -7,7 +7,7 @@ class EmployeeDashboard extends Component {
         this.state = {
             currentView : null,
             dataIsLoaded : false,
-            apiPageLength : 500,
+            apiPageLength : 100,
             minApiPage : 1,
             currentApiPage : 1,
             apiData : null,
@@ -124,7 +124,7 @@ class EmployeeDashboard extends Component {
             } else if (focusedEmployeeIndex <= 0 && currentDataIndex > 0) {
                 // decrement data and set index to data.length
                 this.decrementCurrentData();
-                newFocusedEmployeeIndex = currentData.length;
+                newFocusedEmployeeIndex = currentData.length - 1;
                 setEmployeeIndexAndId(newFocusedEmployeeIndex);
             }
         } else if (key === "ARROWDOWN") {
@@ -134,7 +134,7 @@ class EmployeeDashboard extends Component {
                 logEmployeeIndexAndId();
                 setEmployeeIndexAndId(newFocusedEmployeeIndex);
             } else {
-                // increment data and, reset index to 0
+                // increment data and reset index to 0
                 this.incrementCurrentData();
                 newFocusedEmployeeIndex = 0;
                 setEmployeeIndexAndId(newFocusedEmployeeIndex);

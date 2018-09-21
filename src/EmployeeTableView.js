@@ -10,30 +10,52 @@ class EmployeeTableView extends Component {
             currentPageNum : 0,
             uiPageNum: 1,
         };
-        this.divideDataIntoDisplayPages = this.divideDataIntoDisplayPages.bind(this);
+        this.createDisplayPagesLookup = this.createDisplayPagesLookup.bind(this);
         this.paginateUp = this.paginateUp.bind(this);
         this.paginateDown = this.paginateDown.bind(this);
     }
-    divideDataIntoDisplayPages() {
-        // takes current API data, divides into displayable page-sized chunks.
+    createDisplayPagesLookup() {
         const { pageLength } = this.state;
         const { currentData } = this.props;
         const numOfPages = Math.floor(currentData.length / pageLength);;
         const remainder = currentData.length % pageLength;
-        let displayPages = [];
-        let pageData;
+        let displayPagesLookup = [];
+        let startIndex;
+        let endIndex;
+        let minId;
+        let maxId;
 
         for (let i = 0; i < numOfPages; i++) {
-            pageData = currentData.slice(pageLength * i, pageLength * (i + 1));
-            displayPages = [...displayPages, pageData];
+            startIndex = pageLength * i;
+            endIndex = pageLength * (i + 1);
+            minId = currentData[startIndex].id;
+            maxId = currentData[endIndex - 1].id;
+            displayPagesLookup = [...displayPagesLookup,
+                    {
+                        startIndex: startIndex,
+                        endIndex: endIndex,
+                        minId: minId,
+                        maxId: maxId,
+                    }
+                ];
         }
         if ( remainder > 0 ) {
-            pageData = currentData.slice(pageLength * numOfPages);
-            displayPages = [...displayPages, pageData]
+            startIndex = pageLength * numOfPages;
+            endIndex = currentData.length;
+            minId = currentData[startIndex].id;
+            maxId = currentData[endIndex - 1].id;
+            displayPagesLookup = [...displayPagesLookup,
+                    {
+                        startIndex: startIndex,
+                        endIndex: endIndex,
+                        minId: minId,
+                        maxId: maxId,
+                    }
+                ];
         }
         this.setState({
-            displayPages: displayPages,
             maxPage: numOfPages,
+            displayPagesLookup: displayPagesLookup,
         });
     }
     paginateUp() {
@@ -93,19 +115,23 @@ class EmployeeTableView extends Component {
         }
     }
     componentDidMount() {
-        this.divideDataIntoDisplayPages();
+        this.createDisplayPagesLookup();
     }
     componentDidUpdate(prevProps, prevState) {
         if ( prevProps.currentData !== this.props.currentData ) {
             console.log("got new data")
-            this.divideDataIntoDisplayPages();
+            this.createDisplayPagesLookup();
         }
     }
     render() {
-        const { displayPages, currentPageNum, maxPage, uiPageNum } = this.state;
+        const { displayPagesLookup, currentPageNum, maxPage, uiPageNum } = this.state;
+        const { currentData } = this.props;
 
         let rows; // NOTE: rendering table to be handled by a separate tableComponent
-        if (displayPages && currentPageNum < maxPage) {
+        if (displayPagesLookup && currentPageNum < maxPage) {
+            const start = displayPagesLookup[currentPageNum].startIndex;
+            const end = displayPagesLookup[currentPageNum].endIndex;
+            const currentPageData = currentData.slice(start, end);
 
             const toTitleCase = (str) => {
                 str = str.toLowerCase().split(' ');
@@ -114,8 +140,7 @@ class EmployeeTableView extends Component {
                 }
                 return str.join(' ');
             };
-
-            rows = displayPages[currentPageNum].map( item => {
+            rows = currentPageData.map( item => {
                 return (
                     <tr key={item.id}>
                         <td>{item.id}</td>
