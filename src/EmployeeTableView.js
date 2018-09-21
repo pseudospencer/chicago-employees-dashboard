@@ -18,10 +18,8 @@ class EmployeeTableView extends Component {
         // takes current API data, divides into displayable page-sized chunks.
         const { pageLength } = this.state;
         const { currentData } = this.props;
-
         const numOfPages = Math.floor(currentData.length / pageLength);;
         const remainder = currentData.length % pageLength;
-
         let displayPages = [];
         let pageData;
 
@@ -30,21 +28,18 @@ class EmployeeTableView extends Component {
 
             displayPages = [...displayPages, pageData];
         }
-
         if ( remainder > 0 ) {
             pageData = currentData.slice(pageLength * numOfPages);
             displayPages = [...displayPages, ]
         }
-
         this.setState({
             displayPages: displayPages,
             maxPage: numOfPages,
         });
-
     }
     paginateUp() {
         const { currentPageNum, uiPageNum, maxPage, minPage } = this.state;
-        const { cycleDataForward } = this.props;
+        const { incrementData } = this.props;
         let newPage;
         let newUiPage;
 
@@ -58,8 +53,8 @@ class EmployeeTableView extends Component {
                 uiPageNum: newUiPage,
             });
         } else {
-            console.log("paginateUp cycle");
-            cycleDataForward();
+            console.log("paginateUp increment");
+            incrementData();
             newPage = minPage;
             newUiPage = uiPageNum + 1;
 
@@ -72,10 +67,9 @@ class EmployeeTableView extends Component {
     }
     paginateDown() {
         const { currentPageNum, uiPageNum, maxPage, minPage } = this.state;
-        const { cycleDataBackward } = this.props;
+        const { decrementData } = this.props;
         let newPage;
         let newUiPage;
-
         if ( currentPageNum > minPage && uiPageNum > 1 ) {
             console.log("paginateDown", "uiPageNum", uiPageNum);
             newPage = currentPageNum - 1;
@@ -86,9 +80,8 @@ class EmployeeTableView extends Component {
                 uiPageNum: newUiPage,
             });
         } else if ( currentPageNum == minPage && uiPageNum > 1 ) {
-            // NOTE: buggy: sometimes there's an issue caused by async nature of cycleData, where the uiPageNum can drop below 1 while still fetching data. Only happens when mashing button
-            console.log("paginateDown cycle", "uiPageNum", uiPageNum);
-            cycleDataBackward();
+            console.log("paginateDown decrement", "uiPageNum", uiPageNum);
+            decrementData();
             newPage = maxPage;
             newUiPage = uiPageNum - 1;
 
@@ -96,7 +89,6 @@ class EmployeeTableView extends Component {
                 currentPageNum : newPage,
                 uiPageNum: newUiPage,
             });
-
         } else {
             // do nothing
         }
@@ -112,13 +104,16 @@ class EmployeeTableView extends Component {
     }
     render() {
         const { displayPages, currentPageNum, maxPage, uiPageNum } = this.state;
-        let list;
 
-        // NOTE: rendering list to be handled by a separate tableComponent
+        let rows; // NOTE: rendering table to be handled by a separate tableComponent
         if (displayPages && currentPageNum < maxPage) {
-            list = displayPages[currentPageNum].map( item => {
+            rows = displayPages[currentPageNum].map( item => {
                 return (
-                    <p key={item.id}>{item.name}, {item.id}</p>
+                    <tr key={item.id}>
+                        <td>{item.id}</td>
+                        <td>{item.name}</td>
+                        <td>{item.department}</td>
+                    </tr>
                 )
             });
             console.log("currentPageNum",  currentPageNum, "maxPage", maxPage);
@@ -129,7 +124,21 @@ class EmployeeTableView extends Component {
                 <p>{"TableView Page " + (uiPageNum)}</p>
                 <button type="button" onClick={this.paginateDown}>Previous Page</button>
                 <button type="button" onClick={this.paginateUp}>Next Page</button>
-                {list}
+                <div className='table-wrapper'>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {rows}
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
         )
     }

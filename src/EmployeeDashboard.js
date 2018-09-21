@@ -7,30 +7,25 @@ class EmployeeDashboard extends Component {
         this.state = {
             currentView : null,
             dataIsLoaded : false,
-            apiPageLength : 100,
+            apiPageLength : 500,
             minApiPage : 1,
             currentApiPage : 1,
-            currentDataIndex : 0,
-            apiData : {
-                previous : null,
-                current : null,
-                next : null,
-            },
-            apiData2 : null,
-            selectedEmployeeId : null,
+            apiData : null,
+            currentDataIndex: null,
+            focusedEmployeeId : null,
             filtersApplied : null,
             maxEmployeeId : null,
             maxApiPage : null,
         };
         this.fetchApiData = this.fetchApiData.bind(this);
         this.handleFetchedApiData = this.handleFetchedApiData.bind(this);
-        this.handleFetchedApiData2 = this.handleFetchedApiData2.bind(this);
         this.loadDataIfNeeded = this.loadDataIfNeeded.bind(this);
-        this.cycleDataForward = this.cycleDataForward.bind(this);
-        this.cycleDataBackward = this.cycleDataBackward.bind(this);
+        this.incrementCurrentData = this.incrementCurrentData.bind(this);
+        this.decrementCurrentData = this.decrementCurrentData.bind(this);
+        this.handleKeyPress = this.handleKeyPress.bind(this);
     }
-
     fetchApiData(pageNum = 1, pageLength = 100) {
+        console.log("Fetch Data");
         const baseApiUrl = "https://dt-interviews.appspot.com/"
         const searchParams = "?page=" + pageNum + "&per_page=" + pageLength;
         const requestUrl = baseApiUrl + searchParams;
@@ -40,7 +35,6 @@ class EmployeeDashboard extends Component {
             .then(
                 result => {
                     this.handleFetchedApiData(result);
-                    this.handleFetchedApiData2(result);
                 },
                 (error) => {
                     console.log("Error!", error);
@@ -52,162 +46,65 @@ class EmployeeDashboard extends Component {
                 }
             )
     }
-
-    handleFetchedApiData2(data) {
-        const {apiData2} = this.state;
-
-        console.log("Got apiData2", data);
-
-        if (apiData2 === null) {
+    handleFetchedApiData(data) {
+        console.log("Got apiData", data);
+        const {apiData, dataIsLoaded} = this.state;
+        if (dataIsLoaded === false) {
             this.setState({
-                apiData2 : [data],
+                apiData : [data],
+                dataIsLoaded: true,
+                currentDataIndex: 0,
             })
         } else {
             this.setState({
-                apiData2 : [...apiData2, data],
+                apiData : [...apiData, data],
             })
-        }
-
-    }
-
-    handleFetchedApiData(data) {
-        // handles one payload of data, loads data into state based on current state
-        const { apiData } = this.state;
-
-        console.log("Got apiData", data);
-
-        // case: no api data stored
-        if (apiData.current === null && apiData.previous === null && apiData.next === null) {
-            apiData.current = data;
-            this.setState({
-                dataIsLoaded: true,
-                apiData : {
-                    ...apiData
-                }
-            })
-            console.log("Set current");
-        }
-        // case: there is some data but no current
-        else if (apiData.current === null) {
-            apiData.current = data;
-            this.setState({
-                apiData : {
-                    ...apiData
-                }
-            })
-            console.log("Set current");
-        }
-        else if (apiData.current !== null) {
-            // case: there is current api data but no previous or next -> Add next (preload)
-            if (apiData.next === null && apiData.previous === null) {
-                apiData.next = data;
-                this.setState({
-                    apiData : {
-                        ...apiData
-                    }
-                })
-                console.log("Set next");
-            }
-            // case: there is current and previous but no next -> add next (cycling forward)
-            else if (apiData.next === null && apiData.previous !== null) {
-                apiData.next = data;
-                this.setState({
-                    apiData : {
-                        ...apiData
-                    }
-                })
-                console.log("Set next");
-            }
-            // case: there is current and next but no previous -> add previous (cycling backwards)
-            else if (apiData.next !== null && apiData.previous === null) {
-                apiData.previous = data;
-                this.setState({
-                    apiData : {
-                        ...apiData
-                    }
-                })
-                console.log("Set previous");
-            }
-        }
-        else {
-            // current is undefined
-            // this should never happen
-            console.error("apiData.current is undefined, apiData:", apiData);
         }
     }
     loadDataIfNeeded() {
-        const { apiData, currentApiPage, dataIsLoaded } = this.state;
+        const { apiData, dataIsLoaded, currentApiPage, apiPageLength, currentDataIndex } = this.state;
 
-        // NOTE: has to be a better way to handle this than looking for null. Maybe some additional flags, i.e. currentLoaded, nextLoaded, previousLoaded
-        // NOTE: May be a good idea to go back and change the data handling so that it does not delete data. Api Data could simply be an array of objects. and set current based on an index.
-
-        if (apiData.current === null) {
-            console.log("Fetch current");
-            this.fetchApiData();
+        if (!dataIsLoaded && apiData === null) {
+            this.fetchApiData(currentApiPage, apiPageLength);
         }
 
-        if (dataIsLoaded) {
-            if (apiData.next === null) {
-                this.fetchApiData(currentApiPage + 1);
-                console.log("Fetch next");
-            }
-
-            if (apiData.previous === null && currentApiPage > 1) {
-                this.fetchApiData(currentApiPage - 1);
-                console.log("Fetch prev");
-            }
+        if (dataIsLoaded && currentDataIndex >= apiData.length - 1) {
+            this.fetchApiData(currentApiPage +1, apiPageLength)
         }
 
     }
-    cycleDataForward() {
-        // cycles apiData through state as so:
-        //  next -> current; current -> previous; previous -> null
-        const { apiData, currentApiPage } = this.state;
-        const shallowCopy = {...apiData};
-
-        shallowCopy.current = apiData.next;
-        shallowCopy.previous = apiData.current;
-        shallowCopy.next = null; // important -> handleFetchedApiData & loadDataIfNeeded look for null values
-
+    incrementCurrentData() {
+        const { currentDataIndex, currentApiPage } = this.state;
         this.setState({
-            apiData : {
-                ...shallowCopy
-            },
+            currentDataIndex : currentDataIndex + 1,
             currentApiPage : currentApiPage + 1,
         });
-        console.log("cycleDataForward");
     }
-    cycleDataBackward() {
-        // cycles apiData through state as so:
-        // previous -> current; current -> next; next -> null
-        const  { currentApiPage, minApiPage } = this.state;
-
-        if (currentApiPage > minApiPage) {
-
-            const { apiData } = this.state;
-            const shallowCopy = {...apiData};
-
-            shallowCopy.current = apiData.previous;
-            shallowCopy.next = apiData.current;
-            shallowCopy.previous = null; // important -> handleFetchedApiData & loadDataIfNeeded look for null values
-
+    decrementCurrentData() {
+        const { currentDataIndex, currentApiPage } = this.state;
+        if (currentDataIndex > 0) {
+            const { currentDataIndex } = this.state;
             this.setState({
-                apiData : {
-                    ...shallowCopy
-                },
+                currentDataIndex : currentDataIndex - 1,
                 currentApiPage : currentApiPage - 1,
             });
-            console.log("cycleDataBackward");
         }
+    }
+    handleKeyPress(e) {
+        const key = e.key.toUpperCase();
+        console.log("keypressed", key);
+        const { focusedEmployeeId } = this.state;
     }
     componentDidMount() {
         this.loadDataIfNeeded();
+        document.addEventListener("keydown", this.handleKeyPress );
     }
     componentDidUpdate() {
         this.loadDataIfNeeded();
     }
     componentWillUnmount() {
         console.log("componentWillUnmount");
+        document.removeEventListener("keydown", this.handleKeyPress() );
     }
     render() {
         const { dataIsLoaded, apiData, currentApiPage, apiPageLength } = this.state;
@@ -229,19 +126,22 @@ class EmployeeDashboard extends Component {
             )
         }
         else if (dataIsLoaded === true) {
+            const { apiData, currentDataIndex } = this.state;
+            const currentData = apiData[currentDataIndex];
+            console.log("apiData", apiData, "currentDataIndex", currentDataIndex, "currentData", currentData);
             return(
                 <div id="employee-dashboard">
                     <h1>City of Chicago Employees Dashboard</h1>
 
                     <p>{"API Page " + currentApiPage}</p>
-                    {/* <button type="button" onClick={this.cycleDataBackward}>Previous Page</button>
-                    <button type="button" onClick={this.cycleDataForward}>Next Page</button> */}
+                    {/* <button type="button" onClick={this.decrementCurrentData}>Previous Page</button>
+                    <button type="button" onClick={this.incrementCurrentData}>Next Page</button> */}
                     <hr></hr>
                     <EmployeeTableView
-                        currentData={apiData.current}
+                        currentData={currentData}
                         apiPageLength ={apiPageLength}
-                        cycleDataForward={this.cycleDataForward}
-                        cycleDataBackward={this.cycleDataBackward}
+                        incrementData={this.incrementCurrentData}
+                        decrementData={this.decrementCurrentData}
                     />
                 </div>
             )
