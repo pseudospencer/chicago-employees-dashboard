@@ -25,12 +25,11 @@ class EmployeeTableView extends Component {
 
         for (let i = 0; i < numOfPages; i++) {
             pageData = currentData.slice(pageLength * i, pageLength * (i + 1));
-
             displayPages = [...displayPages, pageData];
         }
         if ( remainder > 0 ) {
             pageData = currentData.slice(pageLength * numOfPages);
-            displayPages = [...displayPages, ]
+            displayPages = [...displayPages, pageData]
         }
         this.setState({
             displayPages: displayPages,
@@ -107,12 +106,21 @@ class EmployeeTableView extends Component {
 
         let rows; // NOTE: rendering table to be handled by a separate tableComponent
         if (displayPages && currentPageNum < maxPage) {
+
+            const toTitleCase = (str) => {
+                str = str.toLowerCase().split(' ');
+                for (var i = 0; i < str.length; i++) {
+                    str[i] = str[i].charAt(0).toUpperCase() + str[i].slice(1);
+                }
+                return str.join(' ');
+            };
+
             rows = displayPages[currentPageNum].map( item => {
                 return (
                     <tr key={item.id}>
                         <td>{item.id}</td>
-                        <td>{item.name}</td>
-                        <td>{item.department}</td>
+                        <td>{toTitleCase(item.name)}</td>
+                        <td>{toTitleCase(item.department)}</td>
                     </tr>
                 )
             });

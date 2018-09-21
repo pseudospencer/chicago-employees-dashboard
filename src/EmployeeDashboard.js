@@ -12,6 +12,7 @@ class EmployeeDashboard extends Component {
             currentApiPage : 1,
             apiData : null,
             currentDataIndex: null,
+            focusedEmployeeIndex : null,
             focusedEmployeeId : null,
             filtersApplied : null,
             maxEmployeeId : null,
@@ -93,9 +94,54 @@ class EmployeeDashboard extends Component {
     handleKeyPress(e) {
         const key = e.key.toUpperCase();
         console.log("keypressed", key);
-        const { focusedEmployeeId } = this.state;
+        const { focusedEmployeeIndex, apiData, currentDataIndex } = this.state;
+        const currentData = apiData[currentDataIndex];
+        let newFocusedEmployeeIndex;
 
-        if (focusedEmployeeId === null)
+        const logEmployeeIndexAndId = () => {
+            console.log("newFocusedEmployeeIndex", newFocusedEmployeeIndex, "focusedEmployeeId", currentData[newFocusedEmployeeIndex].id);
+        }
+        const setEmployeeIndexAndId = (newFocusedEmployeeIndex) => {
+            this.setState({
+                focusedEmployeeIndex: newFocusedEmployeeIndex,
+                focusedEmployeeId: currentData[newFocusedEmployeeIndex].id,
+            });
+        }
+
+        if (focusedEmployeeIndex === null) {
+            // Need to create an index.
+            if (key === "ARROWUP" || key === "ARROWDOWN" || key === "ENTER") {
+                newFocusedEmployeeIndex = 0;
+                logEmployeeIndexAndId();
+                setEmployeeIndexAndId(newFocusedEmployeeIndex);
+            }
+        } else if (key === "ARROWUP") {
+            if (focusedEmployeeIndex > 0) {
+                // Decrement
+                newFocusedEmployeeIndex = focusedEmployeeIndex - 1;
+                logEmployeeIndexAndId();
+                setEmployeeIndexAndId(newFocusedEmployeeIndex);
+            } else if (focusedEmployeeIndex <= 0 && currentDataIndex > 0) {
+                // decrement data and set index to data.length
+                this.decrementCurrentData();
+                newFocusedEmployeeIndex = currentData.length;
+                setEmployeeIndexAndId(newFocusedEmployeeIndex);
+            }
+        } else if (key === "ARROWDOWN") {
+            if (focusedEmployeeIndex < currentData.length - 1) {
+                // increment
+                newFocusedEmployeeIndex = focusedEmployeeIndex + 1;
+                logEmployeeIndexAndId();
+                setEmployeeIndexAndId(newFocusedEmployeeIndex);
+            } else {
+                // increment data and, reset index to 0
+                this.incrementCurrentData();
+                newFocusedEmployeeIndex = 0;
+                setEmployeeIndexAndId(newFocusedEmployeeIndex);
+            }
+        } else if (key === "ENTER") {
+
+        }
     }
     componentDidMount() {
         this.loadDataIfNeeded();
@@ -129,7 +175,6 @@ class EmployeeDashboard extends Component {
         }
         else if (dataIsLoaded === true) {
             const currentData = apiData[currentDataIndex];
-            console.log("apiData", apiData, "currentDataIndex", currentDataIndex, "currentData", currentData);
             return(
                 <div id="employee-dashboard">
                     <h1>City of Chicago Employees Dashboard</h1>
