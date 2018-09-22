@@ -3,135 +3,25 @@ import React, { Component } from 'react';
 class EmployeeTableView extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            pageLength : 25,
-            minPage : 0,
-            maxPage : 0,
-            currentPageNum : 0,
-            uiPageNum: 1,
-        };
-        this.createDisplayPagesLookup = this.createDisplayPagesLookup.bind(this);
-        this.paginateUp = this.paginateUp.bind(this);
-        this.paginateDown = this.paginateDown.bind(this);
-    }
-    createDisplayPagesLookup() {
-        const { pageLength } = this.state;
-        const { currentData } = this.props;
-        const numOfPages = Math.floor(currentData.length / pageLength);;
-        const remainder = currentData.length % pageLength;
-        let displayPagesLookup = [];
-        let startIndex;
-        let endIndex;
-        let minId;
-        let maxId;
-
-        for (let i = 0; i < numOfPages; i++) {
-            startIndex = pageLength * i;
-            endIndex = pageLength * (i + 1);
-            minId = currentData[startIndex].id;
-            maxId = currentData[endIndex - 1].id;
-            displayPagesLookup = [...displayPagesLookup,
-                    {
-                        startIndex: startIndex,
-                        endIndex: endIndex,
-                        minId: minId,
-                        maxId: maxId,
-                    }
-                ];
-        }
-        if ( remainder > 0 ) {
-            startIndex = pageLength * numOfPages;
-            endIndex = currentData.length;
-            minId = currentData[startIndex].id;
-            maxId = currentData[endIndex - 1].id;
-            displayPagesLookup = [...displayPagesLookup,
-                    {
-                        startIndex: startIndex,
-                        endIndex: endIndex,
-                        minId: minId,
-                        maxId: maxId,
-                    }
-                ];
-        }
-        this.setState({
-            maxPage: numOfPages,
-            displayPagesLookup: displayPagesLookup,
-        });
-    }
-    paginateUp() {
-        const { currentPageNum, uiPageNum, maxPage, minPage } = this.state;
-        const { incrementData } = this.props;
-        let newPage;
-        let newUiPage;
-
-        if ( currentPageNum < maxPage - 1 ) {
-            console.log("paginateUp");
-            newPage = currentPageNum + 1;
-            newUiPage = uiPageNum + 1;
-
-            this.setState({
-                currentPageNum : newPage,
-                uiPageNum: newUiPage,
-            });
-        } else {
-            console.log("paginateUp increment");
-            incrementData();
-            newPage = minPage;
-            newUiPage = uiPageNum + 1;
-
-            this.setState({
-                currentPageNum : newPage,
-                uiPageNum: newUiPage,
-            });
-        }
-
-    }
-    paginateDown() {
-        const { currentPageNum, uiPageNum, maxPage, minPage } = this.state;
-        const { decrementData } = this.props;
-        let newPage;
-        let newUiPage;
-        if ( currentPageNum > minPage && uiPageNum > 1 ) {
-            console.log("paginateDown", "uiPageNum", uiPageNum);
-            newPage = currentPageNum - 1;
-            newUiPage = uiPageNum - 1;
-
-            this.setState({
-                currentPageNum : newPage,
-                uiPageNum: newUiPage,
-            });
-        } else if ( currentPageNum <= minPage && uiPageNum > 1 ) {
-            console.log("paginateDown decrement", "uiPageNum", uiPageNum);
-            decrementData();
-            newPage = maxPage;
-            newUiPage = uiPageNum - 1;
-
-            this.setState({
-                currentPageNum : newPage,
-                uiPageNum: newUiPage,
-            });
-        } else {
-            // do nothing
-        }
     }
     componentDidMount() {
-        this.createDisplayPagesLookup();
+        // this.createDisplayPagesLookup();
     }
     componentDidUpdate(prevProps, prevState) {
-        console.log("EmployeeTableView componentDidUpdate");
-        if ( prevProps.currentData !== this.props.currentData ) {
-            console.log("got new data")
-            this.createDisplayPagesLookup();
-        }
-        const { displayPagesLookup, currentPageNum } = this.state;
-        const { focusedEmployeeId } = this.props;
-        const displayPageInfo = displayPagesLookup[currentPageNum];
-        if ( focusedEmployeeId > displayPageInfo.maxId ) {
-            this.paginateUp();
-        }
-        if ( focusedEmployeeId < displayPageInfo.minId  && currentPageNum > 0) {
-            this.paginateDown();
-        }
+        // console.log("EmployeeTableView componentDidUpdate");
+        // if ( prevProps.currentData !== this.props.currentData ) {
+        //     console.log("got new data")
+        //     this.createDisplayPagesLookup();
+        // }
+        // const { displayPagesLookup, currentPageNum } = this.state;
+        // const { focusedEmployeeId } = this.props;
+        // const displayPageInfo = displayPagesLookup[currentPageNum];
+        // if ( focusedEmployeeId > displayPageInfo.maxId ) {
+        //     this.paginateUp();
+        // }
+        // if ( focusedEmployeeId < displayPageInfo.minId  && currentPageNum > 0) {
+        //     this.paginateDown();
+        // }
 
     }
     render() {
