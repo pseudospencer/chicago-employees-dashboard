@@ -177,6 +177,117 @@ class EmployeeDashboard extends Component {
 
         }
     }
+    createDisplayPagesLookup() {
+        const { api, table } = this.state;
+        const currentData = api.data[api.currentDataIndex];
+        const numOfPages = Math.floor(currentData.length / table.pageLength);;
+        const remainder = currentData.length % table.pageLength;
+        let displayPagesLookup = [];
+        let startIndex;
+        let endIndex;
+        let minId;
+        let maxId;
+
+        for (let i = 0; i < numOfPages; i++) {
+            startIndex = table.pageLength * i;
+            endIndex = table.pageLength * (i + 1);
+            minId = currentData[startIndex].id;
+            maxId = currentData[endIndex - 1].id;
+            displayPagesLookup = [...displayPagesLookup,
+                    {
+                        startIndex: startIndex,
+                        endIndex: endIndex,
+                        minId: minId,
+                        maxId: maxId,
+                    }
+                ];
+        }
+        if ( remainder > 0 ) {
+            startIndex = table.pageLength * numOfPages;
+            endIndex = currentData.length;
+            minId = currentData[startIndex].id;
+            maxId = currentData[endIndex - 1].id;
+            displayPagesLookup = [...displayPagesLookup,
+                    {
+                        startIndex: startIndex,
+                        endIndex: endIndex,
+                        minId: minId,
+                        maxId: maxId,
+                    }
+                ];
+        }
+        this.setState({
+            table: {
+                ...table,
+                maxPage: numOfPages,
+                displayPagesLookup: displayPagesLookup,
+            }
+        });
+    }
+    paginateUp() {
+        const { table } = this.state;
+        let newPage;
+        let newUiPage;
+        const setCurrentPageAndUiPage = () =>  {
+            this.setState({
+                table : {
+                    ...table,
+                    currentPage : newPage,
+                    uiPage: newUiPage,
+                }
+            });
+        }
+
+        if ( table.currentPage < table.maxPage - 1 ) {
+            console.log("paginateUp");
+            newPage = table.currentPage + 1;
+            newUiPage = table.uiPage + 1;
+            setCurrentPageAndUiPage();
+
+        } else {
+            console.log("paginateUp increment");
+
+            // NOTE: May need to change this.
+            this.incrementData();
+            newPage = table.minPage;
+            newUiPage = table.uiPageNum + 1;
+            setCurrentPageAndUiPage();
+        }
+    }
+    paginateDown() {
+        const { table } = this.state;
+        let newPage;
+        let newUiPage;
+        const setCurrentPageAndUiPage = () =>  {
+            this.setState({
+                table : {
+                    ...table,
+                    currentPage : newPage,
+                    uiPage: newUiPage,
+                }
+            });
+        }
+
+        if ( table.currentPage > table.minPage && table.uiPage > 1 ) {
+            console.log("paginateDown", "uiPageNum", table.uiPage);
+            newPage = table.currentPage - 1;
+            newUiPage = table.uiPageNum - 1;
+            setCurrentPageAndUiPage();
+
+        } else if ( table.currentPage <= table.minPage && table.uiPage > 1 ) {
+            console.log("paginateDown decrement", "uiPageNum", table.uiPage);
+
+            // NOTE: May need to change this
+            this.decrementData();
+
+            newPage = table.maxPage;
+            newUiPage = table.uiPageNum - 1;
+
+            setCurrentPageAndUiPage();
+        } else {
+            // do nothing
+        }
+    }
     componentDidMount() {
         console.log("EmployeeDashboard componentDidMount");
         this.loadDataIfNeeded();
