@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import EmployeeTableView from "./EmployeeTableView";
 
-const DEBUG_STATEMENTS = true;
+const DEBUG_STATEMENTS = !true;
 
 class EmployeeDashboard extends Component {
     constructor(props) {
@@ -10,7 +10,7 @@ class EmployeeDashboard extends Component {
             currentView : null,
             api : {
                 dataIsLoaded : false,
-                pageLength : 25,
+                pageLength : 500,
                 minPage : 1,
                 currentPage : 1,
                 currentDataIndex : null,
@@ -37,8 +37,8 @@ class EmployeeDashboard extends Component {
 
         this.createTableDisplayPagesLookup = this.createTableDisplayPagesLookup.bind(this);
         this.setTablePageAndUiPage = this.setTablePageAndUiPage.bind(this);
-        this.paginateTableUp = this.paginateTableUp.bind(this);
-        this.paginateTableDown = this.paginateTableDown.bind(this);
+        this.incrementTablePage = this.incrementTablePage.bind(this);
+        this.decrementTablePage = this.decrementTablePage.bind(this);
 
         this.handleKeyPress = this.handleKeyPress.bind(this);
     }
@@ -189,12 +189,10 @@ class EmployeeDashboard extends Component {
         });
     }
     setTablePageAndUiPage(newPage, newUiPage) {
-        const { table } = this.state;
-
         if (DEBUG_STATEMENTS) {
-            console.log("setTablePageAndUiPage", newPage, newUiPage);
+            console.log("setTablePageAndUiPage", "table.currentPage", newPage, "table.uiPage", newUiPage);
         }
-
+        const { table } = this.state;
         this.setState({
             table : {
                 ...table,
@@ -203,14 +201,14 @@ class EmployeeDashboard extends Component {
             }
         });
     }
-    paginateTableUp() {
+    incrementTablePage() {
         const { table } = this.state;
         let newPage;
         let newUiPage;
 
         if ( table.currentPage < table.maxPage - 1 ) {
             if (DEBUG_STATEMENTS) {
-                console.log("paginateTableUp");
+                console.log("incrementTablePage");
             }
             newPage = table.currentPage + 1;
             newUiPage = table.uiPage + 1;
@@ -218,35 +216,36 @@ class EmployeeDashboard extends Component {
 
         } else {
             if (DEBUG_STATEMENTS) {
-                console.log("paginateTableUp increment");
+                console.log("incrementTablePage increment");
             }
             newPage = table.minPage;
             newUiPage = table.uiPage + 1;
             this.setTablePageAndUiPage(newPage, newUiPage);
         }
     }
-    paginateTableDown() {
+    decrementTablePage() {
         const { table } = this.state;
         let newPage;
         let newUiPage;
 
-        if ( table.currentPage > table.minPage && table.uiPage > 1 ) {
-            if (DEBUG_STATEMENTS) {
-                console.log("paginateTableDown", "uiPageNum", table.uiPage);
-            }
-            newPage = table.currentPage - 1;
-            newUiPage = table.uiPageNum - 1;
-            this.setTablePageAndUiPage(newPage, newUiPage);
+        // never go below page 1
+        if ( table.uiPage > 1 ) {
+            if ( table.currentPage > table.minPage ) {
+                if (DEBUG_STATEMENTS) {
+                    console.log("decrementTablePage", "uiPageNum", table.uiPage);
+                }
+                newPage = table.currentPage - 1;
+                newUiPage = table.uiPage - 1;
+                this.setTablePageAndUiPage(newPage, newUiPage);
 
-        } else if ( table.currentPage <= table.minPage && table.uiPage > 1 ) {
-            if (DEBUG_STATEMENTS) {
-                console.log("paginateTableDown decrement", "uiPageNum", table.uiPage);
+            } else if ( table.currentPage <= table.minPage ) {
+                if (DEBUG_STATEMENTS) {
+                    console.log("decrementTablePage decrement", "table.currentPage", table.currentPage, "uiPage", table.uiPage);
+                }
+                newPage = table.maxPage - 1;
+                newUiPage = table.uiPage - 1;
+                this.setTablePageAndUiPage(newPage, newUiPage);
             }
-            newPage = table.maxPage;
-            newUiPage = table.uiPageNum - 1;
-            this.setTablePageAndUiPage(newPage, newUiPage);
-        } else {
-            // do nothing
         }
     }
 
@@ -256,19 +255,17 @@ class EmployeeDashboard extends Component {
         if (DEBUG_STATEMENTS) {
             console.log("keypressed", key);
         }
-        const { api, focusedEmployee } = this.state;
+        const { api, table, focusedEmployee } = this.state;
         const currentData = api.data[api.currentDataIndex];
         let newFocusedEmployeeIndex;
 
         const logEmployeeIndexAndId = () => {
             console.log("newFocusedEmployeeIndex", newFocusedEmployeeIndex, "focusedEmployeeId", currentData[newFocusedEmployeeIndex].id);
         }
-        const setEmployeeIndexAndId = (newFocusedEmployeeIndex, newIdLocation) => {
-
+        const setFocusedEmployeeIndexAndId = (newFocusedEmployeeIndex, newIdLocation) => {
             if (DEBUG_STATEMENTS) {
-                console.log("setEmployeeIndexAndId", newFocusedEmployeeIndex, newIdLocation[newFocusedEmployeeIndex].id, newIdLocation[newFocusedEmployeeIndex]);
+                console.log("setFocusedEmployeeIndexAndId", newFocusedEmployeeIndex, newIdLocation[newFocusedEmployeeIndex].id, newIdLocation[newFocusedEmployeeIndex]);
             }
-
             this.setState({
                 focusedEmployee : {
                     ...focusedEmployee,
@@ -280,54 +277,82 @@ class EmployeeDashboard extends Component {
 
         if (focusedEmployee.index === null) {
             if (key === "ARROWUP" || key === "ARROWDOWN" || key === "ENTER") {
+                // create focusedEmployee
                 newFocusedEmployeeIndex = 0;
                 if (DEBUG_STATEMENTS) {
                     logEmployeeIndexAndId();
                 }
-                setEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
+                setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
             }
         }
         else if (key === "ARROWUP") {
             if (focusedEmployee.index > 0) {
-                // Decrement
+                // decrement focusedEmployee.index
                 newFocusedEmployeeIndex = focusedEmployee.index - 1;
                 if (DEBUG_STATEMENTS) {
                     logEmployeeIndexAndId();
                 }
-                setEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
+                setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
 
-            } else if (focusedEmployee.Index <= 0 && api.currentDataIndex > 0) {
-                // decrement data and set index to data.length - 1
-                const prevData = api.data[api.currentDataIndex - 1]
-                newFocusedEmployeeIndex = prevData.length - 1;
-                if (DEBUG_STATEMENTS) {
-                    logEmployeeIndexAndId();
+                if (focusedEmployee.index % table.pageLength === 0) {
+                    this.decrementTablePage();
                 }
-                this.decrementCurrentApiData();
-                this.paginateTableDown();
-                setEmployeeIndexAndId(newFocusedEmployeeIndex, prevData);
+
+            }
+            else if (focusedEmployee.index === 0 ) {
+                if (api.currentDataIndex > 0) {
+                    // decrement data, decrement page, and set focusedEmployee index to data.length - 1
+                    const prevData = api.data[api.currentDataIndex - 1];
+                    newFocusedEmployeeIndex = prevData.length - 1;
+                    if (DEBUG_STATEMENTS) {
+                        logEmployeeIndexAndId();
+                    }
+                    setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, prevData);
+                    this.decrementTablePage();
+                    this.decrementCurrentApiData();
+
+                }
+            }
+            else {
+                // This should never happen
+                if (DEBUG_STATEMENTS) {
+                    console.log("ARROW UP ELSE", focusedEmployee);
+                }
             }
         }
         else if (key === "ARROWDOWN") {
             if (focusedEmployee.index < currentData.length - 1) {
-                // increment
-                newFocusedEmployeeIndex = focusedEmployee.index + 1;
-                if (DEBUG_STATEMENTS) {
-                    logEmployeeIndexAndId();
+                if (focusedEmployee.index % table.pageLength !== table.pageLength - 1) {
+                    // increment focusedEmployee.index
+                    newFocusedEmployeeIndex = focusedEmployee.index + 1;
+                    if (DEBUG_STATEMENTS) {
+                        logEmployeeIndexAndId();
+                    }
+                    setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
                 }
-                setEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
-            } else {
-                // increment data and reset index to 0
+                else if (focusedEmployee.index % table.pageLength === table.pageLength - 1) {
+                    // increment focusedEmployee.index, increment page
+                    newFocusedEmployeeIndex = focusedEmployee.index + 1;
+                    if (DEBUG_STATEMENTS) {
+                        logEmployeeIndexAndId();
+                    }
+                    this.incrementTablePage();
+                    setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
+                }
+            }
+            else {
+                // increment data, increment page, and reset focusedEmployee.index to 0
                 newFocusedEmployeeIndex = 0;
                 const nextData = api.data[api.currentDataIndex + 1];
                 if (DEBUG_STATEMENTS) {
                     logEmployeeIndexAndId();
                 }
                 this.incrementCurrentApiData();
-                this.paginateTableUp();
-                setEmployeeIndexAndId(newFocusedEmployeeIndex, nextData);
+                this.incrementTablePage();
+                setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, nextData);
             }
-        } else if (key === "ENTER") {
+        }
+        else if (key === "ENTER") {
 
         }
     }
@@ -358,7 +383,7 @@ class EmployeeDashboard extends Component {
         document.removeEventListener("keydown", this.handleKeyPress() );
     }
     render() {
-        if(DEBUG_STATEMENTS) {
+        if (DEBUG_STATEMENTS) {
             console.log("RENDER");
         }
         const { api, table, focusedEmployee  } = this.state;
@@ -381,7 +406,8 @@ class EmployeeDashboard extends Component {
         else if (api.dataIsLoaded === true) {
             const currentData = api.data[api.currentDataIndex];
 
-            let rows; // NOTE: rendering table to be handled by a separate tableComponent
+            // NOTE: rendering table to be handled by a separate tableComponent
+            let rows;
 
             if (DEBUG_STATEMENTS) {
                 console.log("should create table: ", table.displayPagesLookup, table.currentPage, table.maxPage, table.currentPage <= table.maxPage);
@@ -393,7 +419,7 @@ class EmployeeDashboard extends Component {
                 const currentPageData = currentData.slice(start, end);
 
                 if (DEBUG_STATEMENTS) {
-                    console.log("Creating table: start", start, "end", end, "currentPageData");
+                    console.log("Creating table: curr page =", table.currentPage, "displayPagesLookup =", table.displayPagesLookup,  "start", start, "end", end, "currentPageData");
                 }
 
                 const toTitleCase = (str) => {
@@ -416,7 +442,6 @@ class EmployeeDashboard extends Component {
                 if (DEBUG_STATEMENTS) {
                     console.log("EmployeeTableView Render currentPage",  table.currentPage, "maxPage", table.maxPage);
                 }
-
             }
             return(
                 <div id="employee-dashboard">
