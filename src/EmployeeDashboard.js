@@ -404,6 +404,7 @@ class EmployeeDashboard extends Component {
             )
         }
         else if (api.dataIsLoaded === true) {
+
             const currentData = api.data[api.currentDataIndex];
 
             // NOTE: rendering table to be handled by a separate tableComponent

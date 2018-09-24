@@ -25,6 +25,9 @@ class EmployeeTableView extends Component {
 
     }
     render() {
+
+
+
         const { displayPagesLookup, currentPageNum, maxPage, uiPageNum } = this.state;
         const { currentData, focusedEmployeeId } = this.props;
 
