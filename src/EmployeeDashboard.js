@@ -10,7 +10,7 @@ class EmployeeDashboard extends Component {
             currentView : null,
             api : {
                 dataIsLoaded : false,
-                pageLength : 500,
+                pageLength : 100,
                 minPage : 1,
                 currentPage : 1,
                 currentDataIndex : null,
@@ -238,7 +238,7 @@ class EmployeeDashboard extends Component {
                 newUiPage = table.uiPage - 1;
                 this.setTablePageAndUiPage(newPage, newUiPage);
 
-            } else if ( table.currentPage <= table.minPage ) {
+            } else  {
                 if (DEBUG_STATEMENTS) {
                     console.log("decrementTablePage decrement", "table.currentPage", table.currentPage, "uiPage", table.uiPage);
                 }
@@ -247,6 +247,34 @@ class EmployeeDashboard extends Component {
                 this.setTablePageAndUiPage(newPage, newUiPage);
             }
         }
+    }
+
+    // Focused Employee methods
+    setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, newIdLocation) {
+        const { focusedEmployee } = this.state;
+        if (DEBUG_STATEMENTS) {
+            console.log("setFocusedEmployeeIndexAndId", newFocusedEmployeeIndex, newIdLocation[newFocusedEmployeeIndex].id, newIdLocation[newFocusedEmployeeIndex]);
+        }
+        this.setState({
+            focusedEmployee : {
+                ...focusedEmployee,
+                index : newFocusedEmployeeIndex,
+                id : newIdLocation[newFocusedEmployeeIndex].id
+            },
+        });
+    }
+    incrementFocusedEmployee() {
+        const { focusedEmployee } = this.state;
+        let newFocusedEmployeeIndex;
+
+    }
+    decrementFocusedEmployee() {
+        const { focusedEmployee } = this.state;
+        let newFocusedEmployeeIndex;
+    }
+    nullifyFocusedEmployee() {
+        const { focusedEmployee } = this.state;
+        let newFocusedEmployeeIndex;
     }
 
     // Component Methods
@@ -404,84 +432,30 @@ class EmployeeDashboard extends Component {
             )
         }
         else if (api.dataIsLoaded === true) {
-
             const currentData = api.data[api.currentDataIndex];
 
-            // NOTE: rendering table to be handled by a separate tableComponent
-            let rows;
-
-            if (DEBUG_STATEMENTS) {
-                console.log("should create table: ", table.displayPagesLookup, table.currentPage, table.maxPage, table.currentPage <= table.maxPage);
-            }
-
-            if (table.displayPagesLookup && table.currentPage <= table.maxPage) {
-                const start = table.displayPagesLookup[table.currentPage].startIndex;
-                const end = table.displayPagesLookup[table.currentPage].endIndex;
-                const currentPageData = currentData.slice(start, end);
-
-                if (DEBUG_STATEMENTS) {
-                    console.log("Creating table: curr page =", table.currentPage, "displayPagesLookup =", table.displayPagesLookup,  "start", start, "end", end, "currentPageData");
-                }
-
-                const toTitleCase = (str) => {
-                    str = str.toLowerCase().split(' ');
-                    for (var i = 0; i < str.length; i++) {
-                        str[i] = str[i].charAt(0).toUpperCase() + str[i].slice(1);
-                    }
-                    return str.join(' ');
-                };
-                rows = currentPageData.map( item => {
-                    const style = item.id === focusedEmployee.id ? {color: "blue"} : {};
-                    return (
-                        <tr key={item.id} style={style}>
-                            <td>{item.id}</td>
-                            <td>{toTitleCase(item.name)}</td>
-                            <td>{toTitleCase(item.department)}</td>
-                        </tr>
-                    )
-                });
-                if (DEBUG_STATEMENTS) {
-                    console.log("EmployeeTableView Render currentPage",  table.currentPage, "maxPage", table.maxPage);
-                }
-            }
+            const paginateApiButtons = (
+                <div className="paginate-api-buttons">
+                    <button type="button" onClick={this.decrementCurrentApiData}>Previous Page</button>
+                    <button type="button" onClick={this.incrementCurrentApiData}>Next Page</button>
+                </div>
+            );
             return(
                 <div id="employee-dashboard">
                     <h1>City of Chicago Employees Dashboard</h1>
                     <p>{"API Page " + api.currentPage}</p>
-                    <button type="button" onClick={this.decrementCurrentApiData}>Previous Page</button>
-                    <button type="button" onClick={this.incrementCurrentApiData}>Next Page</button>
+                    {/* {paginateApiButtons} */}
                     <hr></hr>
-
-                    <div id="employee-table-view">
-                        <h2>Employee Table View</h2>
-                        <p>{"TableView Page " + (table.uiPage)}</p>
-                        <button type="button" onClick={this.paginateDown}>Previous Page</button>
-                        <button type="button" onClick={this.paginateUp}>Next Page</button>
-                        <div className='table-wrapper'>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Department</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {rows}
-                                </tbody>
-                            </table>
-                        </div>
-
-                    </div>
-
-                    {/* <EmployeeTableView
+                    <EmployeeTableView
                         currentData={currentData}
-                        apiPageLength ={apiPageLength}
-                        incrementData={this.incrementCurrentApiData}
-                        decrementData={this.decrementCurrentApiData}
-                        focusedEmployeeId={focusedEmployeeId}
-                    /> */}
+                        table={table}
+                        focusedEmployee={focusedEmployee}
+                        incrementTablePage={this.incrementTablePage}
+                        decrementTablePage={this.decrementTablePage}
+                    />
                 </div>
+
+
             )
         }
     }

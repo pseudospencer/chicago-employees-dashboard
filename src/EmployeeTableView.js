@@ -1,42 +1,31 @@
 import React, { Component } from 'react';
 
+const DEBUG_STATEMENTS = true;
+
 class EmployeeTableView extends Component {
     constructor(props) {
         super(props);
     }
     componentDidMount() {
-        // this.createDisplayPagesLookup();
     }
     componentDidUpdate(prevProps, prevState) {
-        // console.log("EmployeeTableView componentDidUpdate");
-        // if ( prevProps.currentData !== this.props.currentData ) {
-        //     console.log("got new data")
-        //     this.createDisplayPagesLookup();
-        // }
-        // const { displayPagesLookup, currentPageNum } = this.state;
-        // const { focusedEmployeeId } = this.props;
-        // const displayPageInfo = displayPagesLookup[currentPageNum];
-        // if ( focusedEmployeeId > displayPageInfo.maxId ) {
-        //     this.paginateUp();
-        // }
-        // if ( focusedEmployeeId < displayPageInfo.minId  && currentPageNum > 0) {
-        //     this.paginateDown();
-        // }
-
     }
     render() {
+        const { currentData, table, focusedEmployee, incrementTablePage, decrementTablePage } = this.props;
+        let rows;
 
+        if (DEBUG_STATEMENTS) {
+            console.log("should create table: ", table.displayPagesLookup, table.currentPage, table.maxPage, table.currentPage <= table.maxPage);
+        }
 
-
-        const { displayPagesLookup, currentPageNum, maxPage, uiPageNum } = this.state;
-        const { currentData, focusedEmployeeId } = this.props;
-
-        let rows; // NOTE: rendering table to be handled by a separate tableComponent
-        if (displayPagesLookup && currentPageNum < maxPage) {
-            const start = displayPagesLookup[currentPageNum].startIndex;
-            const end = displayPagesLookup[currentPageNum].endIndex;
+        if (table.displayPagesLookup && table.currentPage <= table.maxPage) {
+            const start = table.displayPagesLookup[table.currentPage].startIndex;
+            const end = table.displayPagesLookup[table.currentPage].endIndex;
             const currentPageData = currentData.slice(start, end);
 
+            if (DEBUG_STATEMENTS) {
+                console.log("Creating table: curr page =", table.currentPage, "displayPagesLookup =", table.displayPagesLookup,  "start", start, "end", end, "currentPageData");
+            }
             const toTitleCase = (str) => {
                 str = str.toLowerCase().split(' ');
                 for (var i = 0; i < str.length; i++) {
@@ -45,7 +34,7 @@ class EmployeeTableView extends Component {
                 return str.join(' ');
             };
             rows = currentPageData.map( item => {
-                const style = item.id === focusedEmployeeId ? {color: "blue"} : {};
+                const style = item.id === focusedEmployee.id ? {color: "blue"} : {};
                 return (
                     <tr key={item.id} style={style}>
                         <td>{item.id}</td>
@@ -54,14 +43,16 @@ class EmployeeTableView extends Component {
                     </tr>
                 )
             });
-            console.log("EmployeeTableView Render currentPageNum",  currentPageNum, "maxPage", maxPage);
+            if (DEBUG_STATEMENTS) {
+                console.log("EmployeeTableView Render currentPage",  table.currentPage, "maxPage", table.maxPage);
+            }
         }
-        return (
+        return(
             <div id="employee-table-view">
                 <h2>Employee Table View</h2>
-                <p>{"TableView Page " + (uiPageNum)}</p>
-                <button type="button" onClick={this.paginateDown}>Previous Page</button>
-                <button type="button" onClick={this.paginateUp}>Next Page</button>
+                <p>{"TableView Page " + (table.uiPage)}</p>
+                <button type="button" onClick={decrementTablePage}>Previous Page</button>
+                <button type="button" onClick={incrementTablePage}>Next Page</button>
                 <div className='table-wrapper'>
                     <table>
                         <thead>
@@ -76,7 +67,6 @@ class EmployeeTableView extends Component {
                         </tbody>
                     </table>
                 </div>
-
             </div>
         )
     }
