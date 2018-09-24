@@ -104,7 +104,10 @@ class EmployeeDashboard extends Component {
             }
             this.fetchApiData(api.currentPage, api.pageLength);
         } else {
-            if (api.dataIsLoaded && api.currentDataIndex + 1 >= api.data.length ) {
+            if (api.dataIsLoaded && api.data && api.currentDataIndex + 1 >= api.data.length) {
+
+                // NOTE: This crashes if no API data - would also crash app if there was an error fetching data.
+
                 if (DEBUG_STATEMENTS) {
                     console.log("fetching more data, currentPage", api.currentPage, "fetching page", api.currentPage + 1);
                 }
@@ -284,104 +287,107 @@ class EmployeeDashboard extends Component {
             console.log("keypressed", key);
         }
         const { api, table, focusedEmployee } = this.state;
-        const currentData = api.data[api.currentDataIndex];
-        let newFocusedEmployeeIndex;
 
-        const logEmployeeIndexAndId = () => {
-            console.log("newFocusedEmployeeIndex", newFocusedEmployeeIndex, "focusedEmployeeId", currentData[newFocusedEmployeeIndex].id);
-        }
-        const setFocusedEmployeeIndexAndId = (newFocusedEmployeeIndex, newIdLocation) => {
-            if (DEBUG_STATEMENTS) {
-                console.log("setFocusedEmployeeIndexAndId", newFocusedEmployeeIndex, newIdLocation[newFocusedEmployeeIndex].id, newIdLocation[newFocusedEmployeeIndex]);
+        if ( api.data ) {
+            const currentData = api.data[api.currentDataIndex];
+            let newFocusedEmployeeIndex;
+
+            const logEmployeeIndexAndId = () => {
+                console.log("newFocusedEmployeeIndex", newFocusedEmployeeIndex, "focusedEmployeeId", currentData[newFocusedEmployeeIndex].id);
             }
-            this.setState({
-                focusedEmployee : {
-                    ...focusedEmployee,
-                    index : newFocusedEmployeeIndex,
-                    id : newIdLocation[newFocusedEmployeeIndex].id
-                },
-            });
-        }
-
-        if (focusedEmployee.index === null) {
-            if (key === "ARROWUP" || key === "ARROWDOWN" || key === "ENTER") {
-                // create focusedEmployee
-                newFocusedEmployeeIndex = 0;
+            const setFocusedEmployeeIndexAndId = (newFocusedEmployeeIndex, newIdLocation) => {
                 if (DEBUG_STATEMENTS) {
-                    logEmployeeIndexAndId();
+                    console.log("setFocusedEmployeeIndexAndId", newFocusedEmployeeIndex, newIdLocation[newFocusedEmployeeIndex].id, newIdLocation[newFocusedEmployeeIndex]);
                 }
-                setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
+                this.setState({
+                    focusedEmployee : {
+                        ...focusedEmployee,
+                        index : newFocusedEmployeeIndex,
+                        id : newIdLocation[newFocusedEmployeeIndex].id
+                    },
+                });
             }
-        }
-        else if (key === "ARROWUP") {
-            if (focusedEmployee.index > 0) {
-                // decrement focusedEmployee.index
-                newFocusedEmployeeIndex = focusedEmployee.index - 1;
-                if (DEBUG_STATEMENTS) {
-                    logEmployeeIndexAndId();
-                }
-                setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
 
-                if (focusedEmployee.index % table.pageLength === 0) {
-                    this.decrementTablePage();
-                }
-
-            }
-            else if (focusedEmployee.index === 0 ) {
-                if (api.currentDataIndex > 0) {
-                    // decrement data, decrement page, and set focusedEmployee index to data.length - 1
-                    const prevData = api.data[api.currentDataIndex - 1];
-                    newFocusedEmployeeIndex = prevData.length - 1;
-                    if (DEBUG_STATEMENTS) {
-                        logEmployeeIndexAndId();
-                    }
-                    setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, prevData);
-                    this.decrementTablePage();
-                    this.decrementCurrentApiData();
-
-                }
-            }
-            else {
-                // This should never happen
-                if (DEBUG_STATEMENTS) {
-                    console.log("ARROW UP ELSE", focusedEmployee);
-                }
-            }
-        }
-        else if (key === "ARROWDOWN") {
-            if (focusedEmployee.index < currentData.length - 1) {
-                if (focusedEmployee.index % table.pageLength !== table.pageLength - 1) {
-                    // increment focusedEmployee.index
-                    newFocusedEmployeeIndex = focusedEmployee.index + 1;
+            if (focusedEmployee.index === null) {
+                if (key === "ARROWUP" || key === "ARROWDOWN" || key === "ENTER") {
+                    // create focusedEmployee
+                    newFocusedEmployeeIndex = 0;
                     if (DEBUG_STATEMENTS) {
                         logEmployeeIndexAndId();
                     }
                     setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
                 }
-                else if (focusedEmployee.index % table.pageLength === table.pageLength - 1) {
-                    // increment focusedEmployee.index, increment page
-                    newFocusedEmployeeIndex = focusedEmployee.index + 1;
+            }
+            else if (key === "ARROWUP") {
+                if (focusedEmployee.index > 0) {
+                    // decrement focusedEmployee.index
+                    newFocusedEmployeeIndex = focusedEmployee.index - 1;
                     if (DEBUG_STATEMENTS) {
                         logEmployeeIndexAndId();
                     }
+                    setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
+
+                    if (focusedEmployee.index % table.pageLength === 0) {
+                        this.decrementTablePage();
+                    }
+
+                }
+                else if (focusedEmployee.index === 0 ) {
+                    if (api.currentDataIndex > 0) {
+                        // decrement data, decrement page, and set focusedEmployee index to data.length - 1
+                        const prevData = api.data[api.currentDataIndex - 1];
+                        newFocusedEmployeeIndex = prevData.length - 1;
+                        if (DEBUG_STATEMENTS) {
+                            logEmployeeIndexAndId();
+                        }
+                        setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, prevData);
+                        this.decrementTablePage();
+                        this.decrementCurrentApiData();
+
+                    }
+                }
+                else {
+                    // This should never happen
+                    if (DEBUG_STATEMENTS) {
+                        console.log("ARROW UP ELSE", focusedEmployee);
+                    }
+                }
+            }
+            else if (key === "ARROWDOWN") {
+                if (focusedEmployee.index < currentData.length - 1) {
+                    if (focusedEmployee.index % table.pageLength !== table.pageLength - 1) {
+                        // increment focusedEmployee.index
+                        newFocusedEmployeeIndex = focusedEmployee.index + 1;
+                        if (DEBUG_STATEMENTS) {
+                            logEmployeeIndexAndId();
+                        }
+                        setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
+                    }
+                    else if (focusedEmployee.index % table.pageLength === table.pageLength - 1) {
+                        // increment focusedEmployee.index, increment page
+                        newFocusedEmployeeIndex = focusedEmployee.index + 1;
+                        if (DEBUG_STATEMENTS) {
+                            logEmployeeIndexAndId();
+                        }
+                        this.incrementTablePage();
+                        setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
+                    }
+                }
+                else {
+                    // increment data, increment page, and reset focusedEmployee.index to 0
+                    newFocusedEmployeeIndex = 0;
+                    const nextData = api.data[api.currentDataIndex + 1];
+                    if (DEBUG_STATEMENTS) {
+                        logEmployeeIndexAndId();
+                    }
+                    this.incrementCurrentApiData();
                     this.incrementTablePage();
-                    setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
+                    setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, nextData);
                 }
             }
-            else {
-                // increment data, increment page, and reset focusedEmployee.index to 0
-                newFocusedEmployeeIndex = 0;
-                const nextData = api.data[api.currentDataIndex + 1];
-                if (DEBUG_STATEMENTS) {
-                    logEmployeeIndexAndId();
-                }
-                this.incrementCurrentApiData();
-                this.incrementTablePage();
-                setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, nextData);
-            }
-        }
-        else if (key === "ENTER") {
+            else if (key === "ENTER") {
 
+            }
         }
     }
     componentDidMount() {
@@ -402,7 +408,7 @@ class EmployeeDashboard extends Component {
             this.loadApiDataIfNeeded();
         }
 
-        if ( !table.displayPagesLookup ) {
+        if ( api.data && !table.displayPagesLookup ) {
             this.createTableDisplayPagesLookup()
         }
     }
