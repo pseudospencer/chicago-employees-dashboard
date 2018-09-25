@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import EmployeeTableView from "./EmployeeTableView";
 import EmployeeDetailView from "./EmployeeDetailView";
+import EmployeeFormView from "./EmployeeFormView";
 
 const DEBUG_STATEMENTS = !true;
 const TABLE_VIEW = 0;
@@ -12,7 +13,8 @@ class EmployeeDashboard extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            currentView : TABLE_VIEW,
+            // currentView : TABLE_VIEW,
+            currentView : null,
             api : {
                 dataIsLoaded : false,
                 pageLength : 5000,
@@ -335,7 +337,7 @@ class EmployeeDashboard extends Component {
             console.log("keypressed", key);
         }
 
-        if ( api.data && currentView === TABLE_VIEW || currentView === DETAIL_VIEW ) {
+        if ( api.data && currentView === TABLE_VIEW || api.data && currentView === DETAIL_VIEW ) {
             const currentData = api.data[api.currentDataIndex];
             let newFocusedEmployeeIndex;
 
@@ -435,7 +437,7 @@ class EmployeeDashboard extends Component {
     }
     handleDetailViewBackButton() {
         const { currentView } = this.state;
-        if ( currentView == DETAIL_VIEW ) {
+        if ( currentView === DETAIL_VIEW ) {
             this.setState({
                 currentView : TABLE_VIEW,
             });
@@ -534,9 +536,7 @@ class EmployeeDashboard extends Component {
                 return(
                     <div id="employee-dashboard">
                         <h1>City of Chicago Employees Dashboard</h1>
-                        <h2>FORM VIEW IS NOT DONE YET</h2>
-
-
+                        <EmployeeFormView />
                     </div>
                 )
             }
@@ -544,19 +544,20 @@ class EmployeeDashboard extends Component {
                 return(
                     <div id="employee-dashboard">
                         <h1>City of Chicago Employees Dashboard</h1>
-                        <p>{"API Page " + api.currentPage}</p>
-                        {/* {paginateApiButtons} */}
                         <EmployeeDetailView
                             currentData={currentData}
                             focusedEmployee={focusedEmployee}
+                            handleBackButton={this.handleDetailViewBackButton}
                         />
                         <EmployeeTableView
                             currentData={currentData}
                             table={table}
                             focusedEmployee={focusedEmployee}
-                            incrementTablePage={this.incrementTablePage}
-                            decrementTablePage={this.decrementTablePage}
+                            incrementTablePage={this.handleIncrementTablePageButton}
+                            decrementTablePage={this.handleDecrementTablePageButton}
+                            handleNameClick={this.handleEmployeeNameClick}
                         />
+                        <EmployeeFormView />
                     </div>
                 )
             }
