@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 class EmployeeDetailView extends Component {
     render() {
-        const { currentData, focusedEmployee } = this.props;
+        const { currentData, focusedEmployee, handleBackButton } = this.props;
         const focused = currentData[focusedEmployee.index];
         if (focused) {
             return (
@@ -16,6 +16,7 @@ class EmployeeDetailView extends Component {
                         <p>Job Title: {focused.job_titles}</p>
                         <p>Salary: {focused.employee_annual_salary}</p>
                     </div>
+                    <button type="button" onClick={handleBackButton}>Back</button>
                 </div>
             );
         }

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import EmployeeTableView from "./EmployeeTableView";
 import EmployeeDetailView from "./EmployeeDetailView";
 
-const DEBUG_STATEMENTS = true;
+const DEBUG_STATEMENTS = !true;
 const TABLE_VIEW = 0;
 const DETAIL_VIEW = 1;
 const FORM_VIEW = 2;
@@ -54,6 +54,7 @@ class EmployeeDashboard extends Component {
         this.handleIncrementTablePageButton = this.handleIncrementTablePageButton.bind(this);
         this.handleDecrementTablePageButton = this.handleDecrementTablePageButton.bind(this);
         this.handleEmployeeNameClick = this.handleEmployeeNameClick.bind(this);
+        this.handleDetailViewBackButton = this.handleDetailViewBackButton.bind(this);
     }
 
     // Api Methods
@@ -428,10 +429,17 @@ class EmployeeDashboard extends Component {
         const newFocusedEmployeeIndex = clickedIndex;
 
         this.setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
-
         this.setState({
             currentView: DETAIL_VIEW,
         });
+    }
+    handleDetailViewBackButton() {
+        const { currentView } = this.state;
+        if ( currentView == DETAIL_VIEW ) {
+            this.setState({
+                currentView : TABLE_VIEW,
+            });
+        }
     }
 
     // Lifecycle
@@ -517,6 +525,7 @@ class EmployeeDashboard extends Component {
                         <EmployeeDetailView
                             currentData={currentData}
                             focusedEmployee={focusedEmployee}
+                            handleBackButton={this.handleDetailViewBackButton}
                         />
                     </div>
                 )
