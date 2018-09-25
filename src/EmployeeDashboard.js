@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import EmployeeTableView from "./EmployeeTableView";
 import EmployeeDetailView from "./EmployeeDetailView";
 
-const DEBUG_STATEMENTS = !true;
+const DEBUG_STATEMENTS = true;
 const TABLE_VIEW = 0;
 const DETAIL_VIEW = 1;
 const FORM_VIEW = 2;
@@ -339,107 +339,78 @@ class EmployeeDashboard extends Component {
     // Component Methods
     handleKeyPress(e) {
         const key = e.key.toUpperCase();
+
         if (DEBUG_STATEMENTS) {
             console.log("keypressed", key);
         }
+
         const { api, table, focusedEmployee, currentView } = this.state;
 
-        if ( api.data ) {
+        if ( api.data && currentView === TABLE_VIEW || currentView === DETAIL_VIEW ) {
             const currentData = api.data[api.currentDataIndex];
             let newFocusedEmployeeIndex;
 
-            const logEmployeeIndexAndId = () => {
-                console.log("newFocusedEmployeeIndex", newFocusedEmployeeIndex, "focusedEmployeeId", currentData[newFocusedEmployeeIndex].id);
-            }
-            const setFocusedEmployeeIndexAndId = (newFocusedEmployeeIndex, newIdLocation) => {
-                if (DEBUG_STATEMENTS) {
-                    console.log("setFocusedEmployeeIndexAndId", newFocusedEmployeeIndex, newIdLocation[newFocusedEmployeeIndex].id, newIdLocation[newFocusedEmployeeIndex]);
-                }
-                this.setState({
-                    focusedEmployee : {
-                        ...focusedEmployee,
-                        index : newFocusedEmployeeIndex,
-                        id : newIdLocation[newFocusedEmployeeIndex].id
-                    },
-                });
-            }
-
-            if (focusedEmployee.index === null) {
+            if (focusedEmployee.index === null ) {
                 if (key === "ARROWUP" || key === "ARROWDOWN" || key === "ENTER") {
                     // create focusedEmployee
-                    // newFocusedEmployeeIndex = 0;
                     newFocusedEmployeeIndex = table.currentPage * table.pageLength;
-                    if (DEBUG_STATEMENTS) {
-                        logEmployeeIndexAndId();
-                    }
-                    setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
+                    this.setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
                 }
             }
             else if (key === "ARROWUP") {
-                if (focusedEmployee.index > 0) {
-                    // decrement focusedEmployee.index
-                    newFocusedEmployeeIndex = focusedEmployee.index - 1;
-                    if (DEBUG_STATEMENTS) {
-                        logEmployeeIndexAndId();
-                    }
-                    setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
-
-                    if (focusedEmployee.index % table.pageLength === 0) {
-                        this.decrementTablePage();
-                    }
-
+                if (focusedEmployee.index > 0 && focusedEmployee.index % table.pageLength === 0) {
+                    // decrement focusedEmployee, decrement table page
+                    this.decrementFocusedEmployee();
+                    this.decrementTablePage();
                 }
-                else if (focusedEmployee.index === 0 ) {
-                    if (api.currentDataIndex > 0) {
-                        // decrement data, decrement page, and set focusedEmployee index to data.length - 1
-                        const prevData = api.data[api.currentDataIndex - 1];
-                        newFocusedEmployeeIndex = prevData.length - 1;
-                        if (DEBUG_STATEMENTS) {
-                            logEmployeeIndexAndId();
-                        }
-                        setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, prevData);
-                        this.decrementTablePage();
-                        this.decrementCurrentApiData();
-
-                    }
+                else if (focusedEmployee.index > 0) {
+                    // decrement focused employee
+                    this.decrementFocusedEmployee();
+                }
+                else if (focusedEmployee.index === 0 && api.currentDataIndex > 0) {
+                    // decrement data, decrement page, and decrement focusedEmployee
+                    this.decrementFocusedEmployee("whileDecrementingData");
+                    this.decrementTablePage();
+                    this.decrementCurrentApiData();
                 }
                 else {
-                    // This should never happen
+                    // Do nothing, because focusedEmployee.index should never become negative
                     if (DEBUG_STATEMENTS) {
                         console.log("ARROW UP ELSE", focusedEmployee);
                     }
                 }
             }
             else if (key === "ARROWDOWN") {
-                if (focusedEmployee.index < currentData.length - 1) {
-                    if (focusedEmployee.index % table.pageLength !== table.pageLength - 1) {
-                        // increment focusedEmployee.index
-                        newFocusedEmployeeIndex = focusedEmployee.index + 1;
-                        if (DEBUG_STATEMENTS) {
-                            logEmployeeIndexAndId();
-                        }
-                        setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
+
+                if (focusedEmployee.index < currentData.length - 1 && focusedEmployee.index % table.pageLength === table.pageLength - 1) {
+                    // increment focusedEmployee, increment table page
+                    if (DEBUG_STATEMENTS) {
+                        console.log("focusedEmployee.index < currentData.length - 1 && focusedEmployee.index % table.pageLength === table.pageLength - 1");
                     }
-                    else if (focusedEmployee.index % table.pageLength === table.pageLength - 1) {
-                        // increment focusedEmployee.index, increment page
-                        newFocusedEmployeeIndex = focusedEmployee.index + 1;
-                        if (DEBUG_STATEMENTS) {
-                            logEmployeeIndexAndId();
-                        }
-                        this.incrementTablePage();
-                        setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
+                    this.incrementFocusedEmployee();
+                    this.incrementTablePage();
+                }
+                else if (focusedEmployee.index < currentData.length - 1) {
+                    // increment focusedEmployee
+                    if (DEBUG_STATEMENTS) {
+                        console.log("focusedEmployee.index < currentData.length - 1");
                     }
+                    this.incrementFocusedEmployee();
+                }
+                else if ( focusedEmployee.index === currentData.length - 1 ) {
+                    // increment focusedEmployee, table page, and api data
+                    if (DEBUG_STATEMENTS) {
+                        console.log('focusedEmployee.index === currentData.length - 1')
+                    }
+                    this.incrementFocusedEmployee("whileIncrementingData");
+                    this.incrementTablePage();
+                    this.incrementCurrentApiData();
                 }
                 else {
-                    // increment data, increment page, and reset focusedEmployee.index to 0
-                    newFocusedEmployeeIndex = 0;
-                    const nextData = api.data[api.currentDataIndex + 1];
+                    // do nothing, because focusedEmployee.index should never become greater than currentData.length - 1
                     if (DEBUG_STATEMENTS) {
-                        logEmployeeIndexAndId();
+                        console.log("ARROWDOWN ELSE", currentData, focusedEmployee);
                     }
-                    this.incrementCurrentApiData();
-                    this.incrementTablePage();
-                    setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, nextData);
                 }
             }
             else if (key === "ENTER") {
