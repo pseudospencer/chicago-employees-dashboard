@@ -1,165 +1,109 @@
 import React, { Component } from 'react';
+import { withFormik } from "formik";
+import Yup from "yup";
 
-class EmployeeFormView extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            firstName: '',
-            lastName: '',
-            middleInitial: '',
-            jobTitle: '',
-            salary: '',
-            department: '',
-        };
+const DEPARTMENT_NAMES = ["WATER MGMNT", "POLICE", "GENERAL SERVICES", "CITY COUNCIL", "STREETS & SAN", "OEMC", "AVIATION", "FIRE", "FAMILY & SUPPORT", "IPRA", "PUBLIC LIBRARY", "BUSINESS AFFAIRS", "TRANSPORTN", "HEALTH", "MAYOR'S OFFICE", "LAW", "FINANCE", "CULTURAL AFFAIRS", "COMMUNITY DEVELOPMENT", "BUILDINGS", "ANIMAL CONTRL", "CITY CLERK", "BOARD OF ELECTION", "INSPECTOR GEN", "TREASURER", "DISABILITIES", "HUMAN RESOURCES", "DoIT", "BUDGET & MGMT", "PROCUREMENT", "HUMAN RELATIONS", "BOARD OF ETHICS", "POLICE BOARD", "ADMIN HEARNG", "LICENSE APPL COMM"];
 
-        this.clearFormData = this.clearFormData.bind(this);
-        this.handleChange = this.handleChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
-    }
-    clearFormData() {
-        this.setState({
-            firstName: '',
-            lastName: '',
-            middleInitial: '',
-            jobTitle: '',
-            salary: '',
-            department: '',
-        });
-    }
-    validateForm() {
+// class EmployeeFormView extends Component { }
 
-    }
-    parseName() {
-
-    }
-    upperCaseEverything() {
-    }
-    handleSubmit(e) {
-        const { firstName, lastName, middleInitial, jobTitle, salary, department } = this.state;
-        alert("Submitted a new employee! Name: ",
-            lastName, ",", firstName, " ", middleInitial,
-            "Job title: ", jobTitle, "Department: ", department,
-            "Salary: ", salary
-        );
-        e.preventDefault();
-    }
-    handleChange(e) {
-        const propName = e.target.name;
-        const propVal = e.target.value;
-        this.setState({
-            [propName] : propVal,
-        })
-    }
-    render() {
-
-        const { firstName, lastName, middleInitial, jobTitle, salary, department } = this.state;
-
-        return (
-            <div id="employee-form-view">
-                <hr></hr>
-                <h2>Employee Form View</h2>
-                <div className="form-outer">
-                    <form>
-                        <label>
-                            First name:
-                            <input
-                                autoFocus
-                                required
-                                type="text"
-                                name="firstName"
-                                placeholder="ex: Afua"
-                                onChange={this.handleChange}
-                                value={firstName}
-                            />
-                        </label>
-                        <label>
-                            Last name:
-                            <input
-                                required
-                                type="text"
-                                name="lastName"
-                                placeholder="ex: Takashiro"
-                                onChange={this.handleChange}
-                                value={lastName}
-                            />
-                        </label>
-                        <label>
-                            Middle initial:
-                            <input
-                                type="text"
-                                name="middleInitial"
-                                placeholder="ex: Q"
-                                onChange={this.handleChange}
-                                value={middleInitial}
-                            />
-                        </label>
-                        <label>
-                            {/* Should this be something other than a text input? Maybe a dropdown? */}
-                            Department:
-                            <input
-                                required
-                                type="text"
-                                name="department"
-                                placeholder="ex: Police"
-                                onChange={this.handleChange}
-                                value={department}
-                            />
-                        </label>
-                        <label>
-                            Job Title:
-                            <input
-                                required
-                                type="text"
-                                name="jobTitle"
-                                placeholder="ex: Police Officer"
-                                onChange={this.handleChange}
-                                value={jobTitle}
-                            />
-                        </label>
-                        <label>
-                            Salary:
-                            <input
-                                required
-                                type="text"
-                                name="salary"
-                                placeholder="ex: 90744.00"
-                                onChange={this.handleChange}
-                                value={salary}
-                            />
-                        </label>
-                        <input type="submit" value="Add Employee" />
-                    </form>
-
-                    {/* <form id="add-employee-form">
-                        <div class="form-item">
-                            <div className="label">
-                                <label for="first-name" id="first-name-label">First name:</label>
-                            </div>
-                            <div class="input">
-                                <input autoFocus type='text' id="first-name" required placeholder="ex: Afua"></input>
-                            </div>
-                        </div>
-                        <div class="form-item">
-                            <div className="label">
-                                <label for="last-name" id="last-name-label">Last name:</label>
-                            </div>
-                            <div class="input">
-                                <input type='text' id="last-name" required placeholder="ex: Takashiro"></input>
-                            </div>
-                        </div>
-                        <div class="form-item">
-                            <div className="label">
-                                <label for="middle-initial" id="middle-initial-label">Last name:</label>
-                            </div>
-                            <div class="input">
-                                <input type='text' id="middle-initial" placeholder="ex: Q"></input>
-                            </div>
-                        </div>
-                    </form> */}
-                </div>
-            </div>
-        );
-    }
+const EmployeeFormView = () => {
+    <div>
+        <input
+            autoFocus
+            required
+            type="text"
+            name="firstName"
+            placeholder="ex: Afua"
+            onChange={this.handleChange}
+            value={firstName}
+        />
+    </div>
 }
+
+const AddEmployeeForm = withFormik({
+
+})(EmployeeFormView)
+
+// const oldStuff = (
+//     <form onSubmit={this.handleSubmit}>
+//         <div>
+//             <label>
+//                 First name:
+//                 <input
+//                     autoFocus
+//                     required
+//                     type="text"
+//                     name="firstName"
+//                     placeholder="ex: Afua"
+//                     onChange={this.handleChange}
+//                     value={firstName}
+//                 />
+//             </label>
+//         </div>
+//         <div>
+//             <label>
+//                 Last name:
+//                 <input
+//                     required
+//                     type="text"
+//                     name="lastName"
+//                     placeholder="ex: Takashiro"
+//                     onChange={this.handleChange}
+//                     value={lastName}
+//                 />
+//             </label>
+//         </div>
+//         <div>
+//             <label>
+//                 Middle initial:
+//                 <input
+//                     type="text"
+//                     name="middleInitial"
+//                     placeholder="ex: Q"
+//                     onChange={this.handleChange}
+//                     value={middleInitial}
+//                 />
+//             </label>
+//         </div>
+//         <div>
+//
+//             <label>
+//                 Department:
+//                 <select value={department} onChange={this.handleChange}>
+//                     {departmentSelectOptions}
+//                 </select>
+//             </label>
+//         </div>
+//         <div>
+//             <label>
+//                 Job Title:
+//                 <input
+//                     required
+//                     type="text"
+//                     name="jobTitle"
+//                     placeholder="ex: Police Officer"
+//                     onChange={this.handleChange}
+//                     value={jobTitle}
+//                 />
+//             </label>
+//         </div>
+//         <div>
+//             <label>
+//                 Salary:
+//                 <input
+//                     required
+//                     type="text"
+//                     name="salary"
+//                     placeholder="ex: 90744.00"
+//                     onChange={this.handleChange}
+//                     value={salary}
+//                 />
+//             </label>
+//         </div>
+//         <div>
+//             <input type="submit" value="Add Employee" />
+//         </div>
+//     </form>
+// )
 
 export default EmployeeFormView;

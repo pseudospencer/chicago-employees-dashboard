@@ -8,23 +8,25 @@ const TABLE_VIEW = 0;
 const DETAIL_VIEW = 1;
 const FORM_VIEW = 2;
 
+// NOTE: Seems to be some issue with the table not rendering the current focused employee. Working on the backend, as keyboard nav still works.
 
 class EmployeeDashboard extends Component {
     constructor(props) {
         super(props);
         this.state = {
             // currentView : TABLE_VIEW,
-            currentView : null,
+            currentView : FORM_VIEW,
+            // currentView : null,
             api : {
                 dataIsLoaded : false,
-                pageLength : 5000,
+                pageLength : 50000,
                 minPage : 1,
                 currentPage : 1,
                 currentDataIndex : null,
                 data : null,
             },
             table : {
-                pageLength : 25,
+                pageLength : 50,
                 minPage : 0,
                 maxPage : 0,
                 currentPage : 0,
