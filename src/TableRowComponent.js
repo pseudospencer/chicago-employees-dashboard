@@ -2,7 +2,7 @@ import React from 'react';
 
 function TableRow(props) {
 
-    const { id, name, department, jobTitle, focusedEmployeeId } = props;
+    const { id, name, department, jobTitle, focusedEmployeeId, index, handleNameClick } = props;
 
     const toTitleCase = (str) => {
         str = str.toLowerCase().split(' ');
@@ -16,7 +16,7 @@ function TableRow(props) {
     return (
         <tr key={id} style={style}>
             <td>{id}</td>
-            <td>{toTitleCase(name)}</td>
+            <td onClick={ () => handleNameClick(index) }>{toTitleCase(name)}</td>
             <td>{toTitleCase(jobTitle)}</td>
             <td>{toTitleCase(department)}</td>
         </tr>

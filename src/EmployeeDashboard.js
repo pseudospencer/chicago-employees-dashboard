@@ -44,8 +44,6 @@ class EmployeeDashboard extends Component {
         this.setTablePageAndUiPage = this.setTablePageAndUiPage.bind(this);
         this.incrementTablePage = this.incrementTablePage.bind(this);
         this.decrementTablePage = this.decrementTablePage.bind(this);
-        this.handleIncrementTablePageButton = this.handleIncrementTablePageButton.bind(this);
-        this.handleDecrementTablePageButton = this.handleDecrementTablePageButton.bind(this);
 
         this.setFocusedEmployeeIndexAndId = this.setFocusedEmployeeIndexAndId.bind(this);
         this.incrementFocusedEmployee = this.incrementFocusedEmployee.bind(this);
@@ -53,6 +51,9 @@ class EmployeeDashboard extends Component {
         this.nullifyFocusedEmployee = this.nullifyFocusedEmployee.bind(this);
 
         this.handleKeyPress = this.handleKeyPress.bind(this);
+        this.handleIncrementTablePageButton = this.handleIncrementTablePageButton.bind(this);
+        this.handleDecrementTablePageButton = this.handleDecrementTablePageButton.bind(this);
+        this.handleEmployeeNameClick = this.handleEmployeeNameClick.bind(this);
     }
 
     // Api Methods
@@ -261,15 +262,6 @@ class EmployeeDashboard extends Component {
             }
         }
     }
-    handleIncrementTablePageButton() {
-        this.incrementTablePage();
-        this.nullifyFocusedEmployee();
-    }
-    handleDecrementTablePageButton() {
-        this.decrementTablePage();
-        this.nullifyFocusedEmployee();
-    }
-
 
     // Focused Employee methods
     setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, newIdLocation) {
@@ -332,19 +324,15 @@ class EmployeeDashboard extends Component {
     nullifyFocusedEmployee() {
         this.setFocusedEmployeeIndexAndId(null, null);
     }
-    handleEmployeeNameClick() {
 
-    }
-
-    // Component Methods
+    // Event Handlers
     handleKeyPress(e) {
         const key = e.key.toUpperCase();
+        const { api, table, focusedEmployee, currentView } = this.state;
 
         if (DEBUG_STATEMENTS) {
             console.log("keypressed", key);
         }
-
-        const { api, table, focusedEmployee, currentView } = this.state;
 
         if ( api.data && currentView === TABLE_VIEW || currentView === DETAIL_VIEW ) {
             const currentData = api.data[api.currentDataIndex];
@@ -381,7 +369,6 @@ class EmployeeDashboard extends Component {
                 }
             }
             else if (key === "ARROWDOWN") {
-
                 if (focusedEmployee.index < currentData.length - 1 && focusedEmployee.index % table.pageLength === table.pageLength - 1) {
                     // increment focusedEmployee, increment table page
                     if (DEBUG_STATEMENTS) {
@@ -427,6 +414,27 @@ class EmployeeDashboard extends Component {
             }
         }
     }
+    handleIncrementTablePageButton() {
+        this.incrementTablePage();
+        this.nullifyFocusedEmployee();
+    }
+    handleDecrementTablePageButton() {
+        this.decrementTablePage();
+        this.nullifyFocusedEmployee();
+    }
+    handleEmployeeNameClick(clickedIndex) {
+        const { focusedEmployee, api } = this.state;
+        const currentData = api.data[api.currentDataIndex];
+        const newFocusedEmployeeIndex = clickedIndex;
+
+        this.setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
+
+        this.setState({
+            currentView: DETAIL_VIEW,
+        });
+    }
+
+    // Lifecycle
     componentDidMount() {
         if (DEBUG_STATEMENTS) {
             console.log("EmployeeDashboard componentDidMount");
@@ -496,6 +504,7 @@ class EmployeeDashboard extends Component {
                             focusedEmployee={focusedEmployee}
                             incrementTablePage={this.handleIncrementTablePageButton}
                             decrementTablePage={this.handleDecrementTablePageButton}
+                            handleNameClick={this.handleEmployeeNameClick}
                         />
                     </div>
                 )

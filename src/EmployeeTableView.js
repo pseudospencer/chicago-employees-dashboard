@@ -6,7 +6,7 @@ import EmployeeTable from "./EmployeeTableComponent";
 class EmployeeTableView extends Component {
     render() {
 
-        const { currentData, table, focusedEmployee, incrementTablePage, decrementTablePage } = this.props;
+        const { currentData, table, focusedEmployee, incrementTablePage, decrementTablePage, handleNameClick } = this.props;
 
         const paginateApiButtons = (
             <div className="paginate-table-buttons">
@@ -25,8 +25,7 @@ class EmployeeTableView extends Component {
                     currentData={currentData}
                     table={table}
                     focusedEmployee={focusedEmployee}
-                    incrementTablePage={incrementTablePage}
-                    decrementTablePage={decrementTablePage}
+                    handleNameClick={handleNameClick}
                 />
             </div>
         )
