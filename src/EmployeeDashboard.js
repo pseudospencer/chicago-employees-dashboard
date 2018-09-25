@@ -1,16 +1,21 @@
 import React, { Component } from 'react';
 import EmployeeTableView from "./EmployeeTableView";
+import EmployeeDetailView from "./EmployeeDetailView";
 
 const DEBUG_STATEMENTS = !true;
+const TABLE_VIEW = 0;
+const DETAIL_VIEW = 1;
+const FORM_VIEW = 2;
+
 
 class EmployeeDashboard extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            currentView : null,
+            currentView : TABLE_VIEW,
             api : {
                 dataIsLoaded : false,
-                pageLength : 100,
+                pageLength : 5000,
                 minPage : 1,
                 currentPage : 1,
                 currentDataIndex : null,
@@ -39,6 +44,13 @@ class EmployeeDashboard extends Component {
         this.setTablePageAndUiPage = this.setTablePageAndUiPage.bind(this);
         this.incrementTablePage = this.incrementTablePage.bind(this);
         this.decrementTablePage = this.decrementTablePage.bind(this);
+        this.handleIncrementTablePageButton = this.handleIncrementTablePageButton.bind(this);
+        this.handleDecrementTablePageButton = this.handleDecrementTablePageButton.bind(this);
+
+        this.setFocusedEmployeeIndexAndId = this.setFocusedEmployeeIndexAndId.bind(this);
+        this.incrementFocusedEmployee = this.incrementFocusedEmployee.bind(this);
+        this.decrementFocusedEmployee = this.decrementFocusedEmployee.bind(this);
+        this.nullifyFocusedEmployee = this.nullifyFocusedEmployee.bind(this);
 
         this.handleKeyPress = this.handleKeyPress.bind(this);
     }
@@ -105,8 +117,6 @@ class EmployeeDashboard extends Component {
             this.fetchApiData(api.currentPage, api.pageLength);
         } else {
             if (api.dataIsLoaded && api.data && api.currentDataIndex + 1 >= api.data.length) {
-
-                // NOTE: This crashes if no API data - would also crash app if there was an error fetching data.
 
                 if (DEBUG_STATEMENTS) {
                     console.log("fetching more data, currentPage", api.currentPage, "fetching page", api.currentPage + 1);
@@ -251,33 +261,79 @@ class EmployeeDashboard extends Component {
             }
         }
     }
+    handleIncrementTablePageButton() {
+        this.incrementTablePage();
+        this.nullifyFocusedEmployee();
+    }
+    handleDecrementTablePageButton() {
+        this.decrementTablePage();
+        this.nullifyFocusedEmployee();
+    }
+
 
     // Focused Employee methods
     setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, newIdLocation) {
-        const { focusedEmployee } = this.state;
-        if (DEBUG_STATEMENTS) {
-            console.log("setFocusedEmployeeIndexAndId", newFocusedEmployeeIndex, newIdLocation[newFocusedEmployeeIndex].id, newIdLocation[newFocusedEmployeeIndex]);
+        const { focusedEmployee, api } = this.state;
+
+        if (newFocusedEmployeeIndex === null && newIdLocation === null) {
+            if (DEBUG_STATEMENTS) {
+                console.log("setFocusedEmployeeIndexAndId", newFocusedEmployeeIndex, newIdLocation);
+            }
+            this.setState({
+                focusedEmployee : {
+                    ...focusedEmployee,
+                    index : newFocusedEmployeeIndex,
+                    id : newIdLocation,
+                },
+            });
         }
-        this.setState({
-            focusedEmployee : {
-                ...focusedEmployee,
-                index : newFocusedEmployeeIndex,
-                id : newIdLocation[newFocusedEmployeeIndex].id
-            },
-        });
+        else {
+            if (DEBUG_STATEMENTS) {
+                console.log("setFocusedEmployeeIndexAndId", newFocusedEmployeeIndex, newIdLocation[newFocusedEmployeeIndex].id, newIdLocation[newFocusedEmployeeIndex]);
+            }
+            this.setState({
+                focusedEmployee : {
+                    ...focusedEmployee,
+                    index : newFocusedEmployeeIndex,
+                    id : newIdLocation[newFocusedEmployeeIndex].id
+                },
+            });
+        }
     }
-    incrementFocusedEmployee() {
-        const { focusedEmployee } = this.state;
+    incrementFocusedEmployee(whileIncrementingData = false) {
+        const { focusedEmployee, api } = this.state;
         let newFocusedEmployeeIndex;
 
+        if (whileIncrementingData || whileIncrementingData == "whileIncrementingData") {
+            newFocusedEmployeeIndex = 0;
+            const nextData = api.data[api.currentDataIndex + 1];
+        }
+        else {
+            const currentData = api.data[api.currentDataIndex];
+            newFocusedEmployeeIndex = focusedEmployee.index + 1;
+            this.setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
+        }
     }
-    decrementFocusedEmployee() {
-        const { focusedEmployee } = this.state;
+    decrementFocusedEmployee(whileDecrementingData = false) {
+        const { focusedEmployee, api } = this.state;
         let newFocusedEmployeeIndex;
+
+        if (whileDecrementingData || whileDecrementingData == "whileDecrementingData") {
+            const prevData = api.data[api.currentDataIndex - 1];
+            newFocusedEmployeeIndex = prevData.length - 1;
+            this.setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, prevData);
+        }
+        else {
+            const currentData = api.data[api.currentDataIndex];
+            newFocusedEmployeeIndex = focusedEmployee.index - 1;
+            this.setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
+        }
     }
     nullifyFocusedEmployee() {
-        const { focusedEmployee } = this.state;
-        let newFocusedEmployeeIndex;
+        this.setFocusedEmployeeIndexAndId(null, null);
+    }
+    handleEmployeeNameClick() {
+
     }
 
     // Component Methods
@@ -286,7 +342,7 @@ class EmployeeDashboard extends Component {
         if (DEBUG_STATEMENTS) {
             console.log("keypressed", key);
         }
-        const { api, table, focusedEmployee } = this.state;
+        const { api, table, focusedEmployee, currentView } = this.state;
 
         if ( api.data ) {
             const currentData = api.data[api.currentDataIndex];
@@ -311,7 +367,8 @@ class EmployeeDashboard extends Component {
             if (focusedEmployee.index === null) {
                 if (key === "ARROWUP" || key === "ARROWDOWN" || key === "ENTER") {
                     // create focusedEmployee
-                    newFocusedEmployeeIndex = 0;
+                    // newFocusedEmployeeIndex = 0;
+                    newFocusedEmployeeIndex = table.currentPage * table.pageLength;
                     if (DEBUG_STATEMENTS) {
                         logEmployeeIndexAndId();
                     }
@@ -386,7 +443,16 @@ class EmployeeDashboard extends Component {
                 }
             }
             else if (key === "ENTER") {
-
+                if ( currentView === TABLE_VIEW ) {
+                    this.setState({
+                        currentView : DETAIL_VIEW,
+                    });
+                }
+                else if ( currentView === DETAIL_VIEW ) {
+                    this.setState({
+                        currentView: TABLE_VIEW,
+                    });
+                }
             }
         }
     }
@@ -420,7 +486,7 @@ class EmployeeDashboard extends Component {
         if (DEBUG_STATEMENTS) {
             console.log("RENDER");
         }
-        const { api, table, focusedEmployee  } = this.state;
+        const { api, table, focusedEmployee, currentView } = this.state;
         if (api.error) {
             return(
                 <div id="employee-dashboard">
@@ -446,23 +512,65 @@ class EmployeeDashboard extends Component {
                     <button type="button" onClick={this.incrementCurrentApiData}>Next Page</button>
                 </div>
             );
-            return(
-                <div id="employee-dashboard">
-                    <h1>City of Chicago Employees Dashboard</h1>
-                    <p>{"API Page " + api.currentPage}</p>
-                    {/* {paginateApiButtons} */}
-                    <hr></hr>
-                    <EmployeeTableView
-                        currentData={currentData}
-                        table={table}
-                        focusedEmployee={focusedEmployee}
-                        incrementTablePage={this.incrementTablePage}
-                        decrementTablePage={this.decrementTablePage}
-                    />
-                </div>
+
+            if (currentView === TABLE_VIEW) {
+                return(
+                    <div id="employee-dashboard">
+                        <h1>City of Chicago Employees Dashboard</h1>
+                        <p>{"API Page " + api.currentPage}</p>
+                        {/* {paginateApiButtons} */}
+                        <EmployeeTableView
+                            currentData={currentData}
+                            table={table}
+                            focusedEmployee={focusedEmployee}
+                            incrementTablePage={this.handleIncrementTablePageButton}
+                            decrementTablePage={this.handleDecrementTablePageButton}
+                        />
+                    </div>
+                )
+            }
+            else if (currentView === DETAIL_VIEW) {
+                return(
+                    <div id="employee-dashboard">
+                        <h1>City of Chicago Employees Dashboard</h1>
+                        <p>{"API Page " + api.currentPage}</p>
+                        <EmployeeDetailView
+                            currentData={currentData}
+                            focusedEmployee={focusedEmployee}
+                        />
+                    </div>
+                )
+            }
+            else if (currentView === FORM_VIEW) {
+                return(
+                    <div id="employee-dashboard">
+                        <h1>City of Chicago Employees Dashboard</h1>
+                        <h2>FORM VIEW IS NOT DONE YET</h2>
 
 
-            )
+                    </div>
+                )
+            }
+            else {
+                return(
+                    <div id="employee-dashboard">
+                        <h1>City of Chicago Employees Dashboard</h1>
+                        <p>{"API Page " + api.currentPage}</p>
+                        {/* {paginateApiButtons} */}
+                        <EmployeeDetailView
+                            currentData={currentData}
+                            focusedEmployee={focusedEmployee}
+                        />
+                        <EmployeeTableView
+                            currentData={currentData}
+                            table={table}
+                            focusedEmployee={focusedEmployee}
+                            incrementTablePage={this.incrementTablePage}
+                            decrementTablePage={this.decrementTablePage}
+                        />
+                    </div>
+                )
+            }
         }
     }
 }
