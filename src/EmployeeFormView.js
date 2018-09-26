@@ -74,6 +74,60 @@ const initialValues = {
     salary: '',
 };
 
+const renderForm = ({ errors, touched, isSubmitting }) => (
+    <Form>
+        <div className="form-row">
+            <div className="form-field">
+                <label htmlFor="firstName">First Name</label>
+                <Field name="firstName" placeholder="ex: Afua"/>
+            </div>
+            <ErrorMessage name="firstName"/>
+        </div>
+        <div className="form-row">
+            <div className="form-field">
+                <label htmlFor="lastName">Last Name</label>
+                <Field name="lastName" placeholder="ex: Takashiro"/>
+            </div>
+            <ErrorMessage name="lastName"/>
+        </div>
+        <div className="form-row">
+            <div className="form-field">
+                <label htmlFor="middleInitial">Middle Initial</label>
+                <Field name="middleInitial" placeholder="ex: Q"/>
+            </div>
+            <ErrorMessage name="middleInitial"/>
+        </div>
+        <div className="form-row">
+            <div className="form-field">
+                <label htmlFor="department">Department</label>
+                <Field name="department" placeholder="Choose Department" component='select'>
+                    {departmentSelectOptions}
+                </Field>
+            </div>
+            <ErrorMessage name="department"/>
+        </div>
+        <div className="form-row">
+            <div className="form-field">
+                <label htmlFor="jobTitle">Job Title</label>
+                <Field name="jobTitle" placeholder="ex: Officer"/>
+            </div>
+            <ErrorMessage name="jobTitle"/>
+        </div>
+        <div className="form-row">
+            <div className="form-field">
+                <label htmlFor="salary">Salary</label>
+                <Field name="salary" placeholder="ex: 89000.00" validate={validateSalary}/>
+            </div>
+            <ErrorMessage name="salary"/>
+        </div>
+        <div className="form-row">
+            <button type="submit" >
+                {isSubmitting ? "Working": "Add employee"}
+            </button>
+        </div>
+    </Form>
+)
+
 const newEmployeeForm = (
     <div>
         <h3>Add New Employee</h3>
@@ -83,52 +137,7 @@ const newEmployeeForm = (
             onSubmit={values => {
                 console.log(values);
             }}
-            render={({ errors, touched, isSubmitting }) => (
-                <Form>
-                    <div className="form-field">
-                        <label htmlFor="firstName">First Name</label>
-                        <Field name="firstName" placeholder="ex: Afua"/>
-                    </div>
-                    <ErrorMessage name="firstName"/>
-
-                    <div className="form-field">
-                        <label htmlFor="lastName">Last Name</label>
-                        <Field name="lastName" placeholder="ex: Takashiro"/>
-                    </div>
-                    <ErrorMessage name="lastName"/>
-
-                    <div className="form-field">
-                        <label htmlFor="middleInitial">Middle Initial</label>
-                        <Field name="middleInitial" placeholder="ex: Q"/>
-                    </div>
-                    <ErrorMessage name="middleInitial"/>
-
-
-                    <div className="form-field">
-                        <label htmlFor="department">Department</label>
-                        <Field name="department" placeholder="Choose Department" component='select'>
-                            {departmentSelectOptions}
-                        </Field>
-                    </div>
-                    <ErrorMessage name="department"/>
-
-                    <div className="form-field">
-                        <label htmlFor="jobTitle">Job Title</label>
-                        <Field name="jobTitle" placeholder="ex: Officer"/>
-                    </div>
-                    <ErrorMessage name="jobTitle"/>
-
-                    <div className="form-field">
-                        <label htmlFor="salary">Salary</label>
-                        <Field name="salary" placeholder="ex: 89000.00" validate={validateSalary}/>
-                    </div>
-                    <ErrorMessage name="salary"/>
-
-                    <button type="submit" >
-                        {isSubmitting ? "Working": "Add employee"}
-                    </button>
-                </Form>
-            )}
+            render={renderForm}
         />
     </div>
 );

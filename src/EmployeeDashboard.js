@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import EmployeeTableView from "./EmployeeTableView";
 import EmployeeDetailView from "./EmployeeDetailView";
 import EmployeeFormView from "./EmployeeFormView";
+import NavComponent from "./NavComponent";
 
 const DEBUG_STATEMENTS = !true;
 const TABLE_VIEW = 0;
@@ -14,9 +15,7 @@ class EmployeeDashboard extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            // currentView : TABLE_VIEW,
             currentView : FORM_VIEW,
-            // currentView : null,
             api : {
                 dataIsLoaded : false,
                 pageLength : 50000,
@@ -38,27 +37,30 @@ class EmployeeDashboard extends Component {
             },
             filtersApplied : null,
         };
+        // API methods
         this.fetchApiData = this.fetchApiData.bind(this);
         this.handleFetchedApiData = this.handleFetchedApiData.bind(this);
         this.loadApiDataIfNeeded = this.loadApiDataIfNeeded.bind(this);
         this.incrementCurrentApiData = this.incrementCurrentApiData.bind(this);
         this.decrementCurrentApiData = this.decrementCurrentApiData.bind(this);
-
+        // Table Methods
         this.createTableDisplayPagesLookup = this.createTableDisplayPagesLookup.bind(this);
         this.setTablePageAndUiPage = this.setTablePageAndUiPage.bind(this);
         this.incrementTablePage = this.incrementTablePage.bind(this);
         this.decrementTablePage = this.decrementTablePage.bind(this);
-
+        // focusedEmployee methods
         this.setFocusedEmployeeIndexAndId = this.setFocusedEmployeeIndexAndId.bind(this);
         this.incrementFocusedEmployee = this.incrementFocusedEmployee.bind(this);
         this.decrementFocusedEmployee = this.decrementFocusedEmployee.bind(this);
         this.nullifyFocusedEmployee = this.nullifyFocusedEmployee.bind(this);
-
+        // Event Handlers
         this.handleKeyPress = this.handleKeyPress.bind(this);
         this.handleIncrementTablePageButton = this.handleIncrementTablePageButton.bind(this);
         this.handleDecrementTablePageButton = this.handleDecrementTablePageButton.bind(this);
         this.handleEmployeeNameClick = this.handleEmployeeNameClick.bind(this);
         this.handleDetailViewBackButton = this.handleDetailViewBackButton.bind(this);
+        this.handleNavAddEmployee = this.handleNavAddEmployee.bind(this);
+        this.handleNavViewEmployees = this.handleNavViewEmployees.bind(this);
     }
 
     // Api Methods
@@ -447,6 +449,22 @@ class EmployeeDashboard extends Component {
             });
         }
     }
+    handleNavViewEmployees() {
+        const { currentView } = this.state;
+        if ( currentView === FORM_VIEW ) {
+            this.setState({
+                currentView : TABLE_VIEW,
+            });
+        }
+    }
+    handleNavAddEmployee() {
+        const { currentView } = this.state;
+        if ( currentView === TABLE_VIEW || currentView === DETAIL_VIEW ) {
+            this.setState({
+                currentView : FORM_VIEW,
+            });
+        }
+    }
 
     // Lifecycle
     componentDidMount() {
@@ -480,6 +498,14 @@ class EmployeeDashboard extends Component {
             console.log("RENDER");
         }
         const { api, table, focusedEmployee, currentView } = this.state;
+
+        const nav = (
+            <NavComponent
+                handleNavAddEmployee={this.handleNavAddEmployee}
+                handleNavViewEmployees={this.handleNavViewEmployees}
+            />
+        )
+
         if (api.error) {
             return(
                 <div id="employee-dashboard">
@@ -493,6 +519,7 @@ class EmployeeDashboard extends Component {
                 return(
                     <div id="employee-dashboard">
                         <h1>City of Chicago Employees Dashboard</h1>
+                        {nav}
                         <EmployeeFormView />
                     </div>
                 )
@@ -501,6 +528,7 @@ class EmployeeDashboard extends Component {
                 return(
                     <div id="employee-dashboard">
                         <h1>City of Chicago Employees Dashboard</h1>
+                        {nav}
                         <p>Loading</p>
                     </div>
                 )
@@ -520,8 +548,9 @@ class EmployeeDashboard extends Component {
                 return(
                     <div id="employee-dashboard">
                         <h1>City of Chicago Employees Dashboard</h1>
-                        <p>{"API Page " + api.currentPage}</p>
+                        {/* <p>{"API Page " + api.currentPage}</p> */}
                         {/* {paginateApiButtons} */}
+                        {nav}
                         <EmployeeTableView
                             currentData={currentData}
                             table={table}
@@ -537,7 +566,8 @@ class EmployeeDashboard extends Component {
                 return(
                     <div id="employee-dashboard">
                         <h1>City of Chicago Employees Dashboard</h1>
-                        <p>{"API Page " + api.currentPage}</p>
+                        {/* <p>{"API Page " + api.currentPage}</p> */}
+                        {nav}
                         <EmployeeDetailView
                             currentData={currentData}
                             focusedEmployee={focusedEmployee}
@@ -550,6 +580,7 @@ class EmployeeDashboard extends Component {
                 return(
                     <div id="employee-dashboard">
                         <h1>City of Chicago Employees Dashboard</h1>
+                        {nav}
                         <EmployeeFormView />
                     </div>
                 )
@@ -558,6 +589,7 @@ class EmployeeDashboard extends Component {
                 return(
                     <div id="employee-dashboard">
                         <h1>City of Chicago Employees Dashboard</h1>
+                        {nav}
                         <EmployeeDetailView
                             currentData={currentData}
                             focusedEmployee={focusedEmployee}
