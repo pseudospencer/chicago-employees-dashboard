@@ -9,13 +9,11 @@ const TABLE_VIEW = 0;
 const DETAIL_VIEW = 1;
 const FORM_VIEW = 2;
 
-// NOTE: Seems to be some issue with the table not rendering the current focused employee. Working on the backend, as keyboard nav still works.
-
 class EmployeeDashboard extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            currentView : FORM_VIEW,
+            currentView : TABLE_VIEW,
             api : {
                 dataIsLoaded : false,
                 pageLength : 50000,
@@ -539,6 +537,7 @@ class EmployeeDashboard extends Component {
 
             const paginateApiButtons = (
                 <div className="paginate-api-buttons">
+                    <p>{"API Page " + api.currentPage}</p>
                     <button type="button" onClick={this.decrementCurrentApiData}>Previous Page</button>
                     <button type="button" onClick={this.incrementCurrentApiData}>Next Page</button>
                 </div>
@@ -548,7 +547,6 @@ class EmployeeDashboard extends Component {
                 return(
                     <div id="employee-dashboard">
                         <h1>City of Chicago Employees Dashboard</h1>
-                        {/* <p>{"API Page " + api.currentPage}</p> */}
                         {/* {paginateApiButtons} */}
                         {nav}
                         <EmployeeTableView
@@ -566,7 +564,6 @@ class EmployeeDashboard extends Component {
                 return(
                     <div id="employee-dashboard">
                         <h1>City of Chicago Employees Dashboard</h1>
-                        {/* <p>{"API Page " + api.currentPage}</p> */}
                         {nav}
                         <EmployeeDetailView
                             currentData={currentData}
