@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
-
-const DEPARTMENT_NAMES = ["Select department","WATER MGMNT", "POLICE", "GENERAL SERVICES", "CITY COUNCIL", "STREETS & SAN", "OEMC", "AVIATION", "FIRE", "FAMILY & SUPPORT", "IPRA", "PUBLIC LIBRARY", "BUSINESS AFFAIRS", "TRANSPORTN", "HEALTH", "MAYOR'S OFFICE", "LAW", "FINANCE", "CULTURAL AFFAIRS", "COMMUNITY DEVELOPMENT", "BUILDINGS", "ANIMAL CONTRL", "CITY CLERK", "BOARD OF ELECTION", "INSPECTOR GEN", "TREASURER", "DISABILITIES", "HUMAN RESOURCES", "DoIT", "BUDGET & MGMT", "PROCUREMENT", "HUMAN RELATIONS", "BOARD OF ETHICS", "POLICE BOARD", "ADMIN HEARNG", "LICENSE APPL COMM"];
+import departmentNames from "./DepartmentNames"
 
 class EmployeeFormView extends Component {
     constructor(props) {
@@ -58,7 +57,7 @@ class EmployeeFormView extends Component {
     }
 
     render() {
-        const departmentSelectOptions = DEPARTMENT_NAMES.map( item => {
+        const departmentSelectOptions = departmentNames.map( item => {
             return (
                 <option key={item} value={item}>{item}</option>
             );

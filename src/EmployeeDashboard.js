@@ -9,6 +9,8 @@ const TABLE_VIEW = 0;
 const DETAIL_VIEW = 1;
 const FORM_VIEW = 2;
 
+const DEFAULT_FILTER_VALUE = "Select department";   // departmentNames[0]
+
 class EmployeeDashboard extends Component {
     constructor(props) {
         super(props);
@@ -21,19 +23,23 @@ class EmployeeDashboard extends Component {
                 currentPage : 1,
                 currentDataIndex : null,
                 data : null,
+                filteredData : null,
+                currentDataPointer: "data",
             },
             table : {
-                pageLength : 50,
+                pageLength : 25,
                 minPage : 0,
                 maxPage : 0,
                 currentPage : 0,
                 uiPage: 1,
+                displayPagesLookup: null,
+                filter : DEFAULT_FILTER_VALUE,
+                filteredDisplayPagesLookup: null,
             },
             focusedEmployee : {
                 index : null,
                 id : null,
             },
-            filtersApplied : null,
         };
         // API methods
         this.fetchApiData = this.fetchApiData.bind(this);
@@ -41,11 +47,14 @@ class EmployeeDashboard extends Component {
         this.loadApiDataIfNeeded = this.loadApiDataIfNeeded.bind(this);
         this.incrementCurrentApiData = this.incrementCurrentApiData.bind(this);
         this.decrementCurrentApiData = this.decrementCurrentApiData.bind(this);
+        this.createFilteredData = this.createFilteredData.bind(this);
+        this.setDataPointer = this.setDataPointer.bind(this);
         // Table Methods
         this.createTableDisplayPagesLookup = this.createTableDisplayPagesLookup.bind(this);
         this.setTablePageAndUiPage = this.setTablePageAndUiPage.bind(this);
         this.incrementTablePage = this.incrementTablePage.bind(this);
         this.decrementTablePage = this.decrementTablePage.bind(this);
+        this.zeroTablePage = this.zeroTablePage.bind(this);
         // focusedEmployee methods
         this.setFocusedEmployeeIndexAndId = this.setFocusedEmployeeIndexAndId.bind(this);
         this.incrementFocusedEmployee = this.incrementFocusedEmployee.bind(this);
@@ -59,6 +68,8 @@ class EmployeeDashboard extends Component {
         this.handleDetailViewBackButton = this.handleDetailViewBackButton.bind(this);
         this.handleNavAddEmployee = this.handleNavAddEmployee.bind(this);
         this.handleNavViewEmployees = this.handleNavViewEmployees.bind(this);
+        this.handleDepartmentFilterChange = this.handleDepartmentFilterChange.bind(this);
+        this.handleNewDepartmentFilterApplication = this.handleNewDepartmentFilterApplication.bind(this);
     }
 
     // Api Methods
@@ -155,6 +166,52 @@ class EmployeeDashboard extends Component {
             });
         }
     }
+    createFilteredData() {
+        if (DEBUG_STATEMENTS) {
+            console.log("createFilteredData");
+        }
+        const { api, table } = this.state;
+
+        if (table.filter !== DEFAULT_FILTER_VALUE) {
+            const filteredData = api.data.map( innerArray => {
+                return innerArray.filter( item => item.department === table.filter);
+            });
+
+            this.setState( state => {
+                return ({ api :
+                            {
+                            ...state.api,
+                            filteredData: filteredData,
+                            },
+                })
+            }
+        )}
+    }
+    setDataPointer() {
+        const { api, table } = this.state;
+
+        let dataPointer;
+        if (table.filter === DEFAULT_FILTER_VALUE) {
+            dataPointer = "data";
+        } else {
+            dataPointer = "filteredData";
+        }
+
+        if (DEBUG_STATEMENTS) {
+            console.log("setDataPointer, new pointer=", dataPointer);
+        }
+
+        console.log("setDataPointer, new pointer=", dataPointer);
+
+        this.setState( (state) => {
+            return ({
+                    api : {
+                        ...state.api,
+                        currentDataPointer: dataPointer,
+                    }
+                })
+        });
+    }
 
     // Table Methods
     createTableDisplayPagesLookup() {
@@ -162,7 +219,12 @@ class EmployeeDashboard extends Component {
             console.log("createTableDisplayPagesLookup");
         }
         const { api, table } = this.state;
-        const currentData = api.data[api.currentDataIndex];
+
+        const currentDataPointer = api.currentDataPointer;
+
+        // const currentData = api.data[api.currentDataIndex];
+        const currentData = api[currentDataPointer][api.currentDataIndex];
+
         const numOfPages = Math.floor(currentData.length / table.pageLength);;
         const remainder = currentData.length % table.pageLength;
         let displayPagesLookup = [];
@@ -199,13 +261,32 @@ class EmployeeDashboard extends Component {
                     }
                 ];
         }
-        this.setState({
-            table: {
-                ...table,
-                maxPage: numOfPages,
-                displayPagesLookup: displayPagesLookup,
-            }
-        });
+
+        if (DEBUG_STATEMENTS) {
+            console.log("createTableDisplayPagesLookup, currentDataPointer=", currentDataPointer);
+        }
+
+        console.log("createTableDisplayPagesLookup, currentDataPointer=", currentDataPointer);
+
+        if (currentDataPointer === "data") {
+            this.setState({
+                table: {
+                    ...table,
+                    maxPage: numOfPages,
+                    displayPagesLookup: displayPagesLookup,
+                }
+            });
+        }
+        else if (currentDataPointer === "filteredData") {
+            this.setState({
+                table: {
+                    ...table,
+                    maxPage: numOfPages,
+                    filteredDisplayPagesLookup: displayPagesLookup,
+                }
+            });
+        }
+
     }
     setTablePageAndUiPage(newPage, newUiPage) {
         if (DEBUG_STATEMENTS) {
@@ -266,6 +347,14 @@ class EmployeeDashboard extends Component {
                 this.setTablePageAndUiPage(newPage, newUiPage);
             }
         }
+    }
+    zeroTablePage() {
+        if (DEBUG_STATEMENTS) {
+            console.log("zeroTablePage");
+        }
+        const newPage = 0;
+        const newUiPage = 1;
+        this.setTablePageAndUiPage(newPage, newUiPage);
     }
 
     // Focused Employee methods
@@ -463,6 +552,32 @@ class EmployeeDashboard extends Component {
             });
         }
     }
+    handleDepartmentFilterChange(e) {
+        const { table } = this.state;
+        const value = e.target.value;
+        if (DEBUG_STATEMENTS) {
+            console.log("handleDepartmentFilterChange, value=", value);
+        }
+        this.setState({
+            table : {
+                ...table,
+                filter: value,
+            }
+        })
+    }
+    handleNewDepartmentFilterApplication() {
+        if (DEBUG_STATEMENTS) {
+            console.log("handleNewDepartmentFilterApplication")
+        }
+
+        // debugger;
+
+        this.setDataPointer();
+        this.createFilteredData();
+        this.createTableDisplayPagesLookup();
+        this.nullifyFocusedEmployee();
+        this.zeroTablePage();
+    }
 
     // Lifecycle
     componentDidMount() {
@@ -483,13 +598,17 @@ class EmployeeDashboard extends Component {
             this.loadApiDataIfNeeded();
         }
 
-        if ( api.data && !table.displayPagesLookup ) {
-            this.createTableDisplayPagesLookup()
+        if ( api.data && table.displayPagesLookup === null ) {
+            this.createTableDisplayPagesLookup();
+        }
+
+        if ( api.data && prevState.table.filter !== table.filter ) {
+            this.handleNewDepartmentFilterApplication();
         }
     }
     componentWillUnmount() {
         console.log("EmployeeDashboard componentWillUnmount");
-        document.removeEventListener("keydown", this.handleKeyPress() );
+        document.removeEventListener("keydown", this.handleKeyPress );
     }
     render() {
         if (DEBUG_STATEMENTS) {
@@ -512,28 +631,33 @@ class EmployeeDashboard extends Component {
                 </div>
             )
         }
+        else if (currentView === FORM_VIEW) {
+            return(
+                <div id="employee-dashboard">
+                    <h1>City of Chicago Employees Dashboard</h1>
+                    {nav}
+                    <EmployeeFormView />
+                </div>
+            )
+        }
         else if (api.dataIsLoaded === false) {
-            if (currentView === FORM_VIEW) {
-                return(
-                    <div id="employee-dashboard">
-                        <h1>City of Chicago Employees Dashboard</h1>
-                        {nav}
-                        <EmployeeFormView />
-                    </div>
-                )
-            }
-            else {
-                return(
-                    <div id="employee-dashboard">
-                        <h1>City of Chicago Employees Dashboard</h1>
-                        {nav}
-                        <p>Loading</p>
-                    </div>
-                )
-            }
+            return(
+                <div id="employee-dashboard">
+                    <h1>City of Chicago Employees Dashboard</h1>
+                    {nav}
+                    <p>Loading</p>
+                </div>
+            )
         }
         else if (api.dataIsLoaded === true) {
             const currentData = api.data[api.currentDataIndex];
+
+            const currentDataBasedOnFilter =
+                table.filter !== DEFAULT_FILTER_VALUE &&
+                api.filteredData !== null ?
+                api.filteredData[api.currentDataIndex] :
+                api.data[api.currentDataIndex];
+
 
             const paginateApiButtons = (
                 <div className="paginate-api-buttons">
@@ -550,12 +674,14 @@ class EmployeeDashboard extends Component {
                         {/* {paginateApiButtons} */}
                         {nav}
                         <EmployeeTableView
-                            currentData={currentData}
+                            // currentData={currentData}
+                            currentData={currentDataBasedOnFilter}
                             table={table}
                             focusedEmployee={focusedEmployee}
                             incrementTablePage={this.handleIncrementTablePageButton}
                             decrementTablePage={this.handleDecrementTablePageButton}
                             handleNameClick={this.handleEmployeeNameClick}
+                            handleDepartmentFilter={this.handleDepartmentFilterChange}
                         />
                     </div>
                 )
@@ -566,19 +692,11 @@ class EmployeeDashboard extends Component {
                         <h1>City of Chicago Employees Dashboard</h1>
                         {nav}
                         <EmployeeDetailView
-                            currentData={currentData}
+                            // currentData={currentData}
+                            currentData={currentDataBasedOnFilter}
                             focusedEmployee={focusedEmployee}
                             handleBackButton={this.handleDetailViewBackButton}
                         />
-                    </div>
-                )
-            }
-            else if (currentView === FORM_VIEW) {
-                return(
-                    <div id="employee-dashboard">
-                        <h1>City of Chicago Employees Dashboard</h1>
-                        {nav}
-                        <EmployeeFormView />
                     </div>
                 )
             }
@@ -588,12 +706,14 @@ class EmployeeDashboard extends Component {
                         <h1>City of Chicago Employees Dashboard</h1>
                         {nav}
                         <EmployeeDetailView
-                            currentData={currentData}
+                            // currentData={currentData}
+                            currentData={currentDataBasedOnFilter}
                             focusedEmployee={focusedEmployee}
                             handleBackButton={this.handleDetailViewBackButton}
                         />
                         <EmployeeTableView
-                            currentData={currentData}
+                            // currentData={currentData}
+                            currentData={currentDataBasedOnFilter}
                             table={table}
                             focusedEmployee={focusedEmployee}
                             incrementTablePage={this.handleIncrementTablePageButton}

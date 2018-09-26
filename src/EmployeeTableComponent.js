@@ -46,7 +46,7 @@ function EmployeeTable(props) {
             <table>
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        {/* <th>ID</th> */}
                         <th>Name</th>
                         <th>Job Title</th>
                         <th>Department</th>
