@@ -332,14 +332,16 @@ class EmployeeDashboard extends Component {
 
     // Event Handlers
     handleKeyPress(e) {
-        const key = e.key.toUpperCase();
         const { api, table, focusedEmployee, currentView } = this.state;
+        let key = e.key;
 
         if (DEBUG_STATEMENTS) {
             console.log("keypressed", key);
         }
 
         if ( api.data && currentView === TABLE_VIEW || api.data && currentView === DETAIL_VIEW ) {
+            key = e.key.toUpperCase();
+
             const currentData = api.data[api.currentDataIndex];
             let newFocusedEmployeeIndex;
 
@@ -487,12 +489,22 @@ class EmployeeDashboard extends Component {
             )
         }
         else if (api.dataIsLoaded === false) {
-            return(
-                <div id="employee-dashboard">
-                    <h1>City of Chicago Employees Dashboard</h1>
-                    <p>Loading</p>
-                </div>
-            )
+            if (currentView === FORM_VIEW) {
+                return(
+                    <div id="employee-dashboard">
+                        <h1>City of Chicago Employees Dashboard</h1>
+                        <EmployeeFormView />
+                    </div>
+                )
+            }
+            else {
+                return(
+                    <div id="employee-dashboard">
+                        <h1>City of Chicago Employees Dashboard</h1>
+                        <p>Loading</p>
+                    </div>
+                )
+            }
         }
         else if (api.dataIsLoaded === true) {
             const currentData = api.data[api.currentDataIndex];
