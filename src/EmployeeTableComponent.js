@@ -1,4 +1,5 @@
 import React from 'react';
+import { Table } from 'react-bootstrap';
 import TableRow from "./TableRowComponent";
 
 const DEBUG_STATEMENTS = !true;
@@ -43,10 +44,9 @@ function EmployeeTable(props) {
 
     return (
         <div className='table-wrapper'>
-            <table>
+            <Table striped bordered condensed hover responsive>
                 <thead>
                     <tr>
-                        {/* <th>ID</th> */}
                         <th>Name</th>
                         <th>Job Title</th>
                         <th>Department</th>
@@ -55,7 +55,7 @@ function EmployeeTable(props) {
                 <tbody>
                     {tableRows}
                 </tbody>
-            </table>
+            </Table>
         </div>
     )
 

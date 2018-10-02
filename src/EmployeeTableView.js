@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Pager, Form, FormGroup, ControlLabel, FormControl } from 'react-bootstrap';
 import EmployeeTable from "./EmployeeTableComponent";
 import departmentNames from "./DepartmentNames"
 
@@ -7,10 +8,13 @@ class EmployeeTableView extends Component {
 
         const { currentData, table, focusedEmployee, incrementTablePage, decrementTablePage, handleNameClick, handleDepartmentFilter } = this.props;
 
-        const paginateTableButtons = (
+        const paginateTableUi = (
             <div className="paginate-table-buttons">
-                <button type="button" onClick={decrementTablePage}>Previous Page</button>
-                <button type="button" onClick={incrementTablePage}>Next Page</button>
+                <Pager>
+                    <Pager.Item previous disabled={table.uiPage <= 1} onClick={decrementTablePage}>&larr;  Previous Page</Pager.Item>
+                    <Pager.Item next disabled={table.uiPage >= table.maxPage} onClick={incrementTablePage}>Next Page &rarr;</Pager.Item>
+                    <p>{"Page " + (table.uiPage) + " of " + (table.maxPage)}</p>
+                </Pager>
             </div>
         );
 
@@ -22,20 +26,24 @@ class EmployeeTableView extends Component {
 
         const filterSelect = (
             <div>
-                <label htmlFor="department-filter">Filter by department</label>
-                <select name="department-filter" placeholder="Choose Department" value={table.filter} onChange={handleDepartmentFilter}>
-                    {departmentSelectOptions}
-                </select>
+                <FormGroup controlID="department-filter">
+                    <ControlLabel htmlFor="department-filter">Filter by department</ControlLabel>
+                    {"  "}
+                    <FormControl
+                        componentClass="select"
+                        value={table.filter} onChange={handleDepartmentFilter}
+                    >
+                            {departmentSelectOptions}
+                    </FormControl>
+                </FormGroup>
             </div>
         )
 
         return(
             <div id="employee-table-view">
-                <hr></hr>
-                <h2>Employee Table View</h2>
-                <p>{"Page " + (table.uiPage)}</p>
-                {paginateTableButtons}
+                <h2>List of City Of Chicago Employees</h2>
                 {filterSelect}
+                {paginateTableUi}
                 <EmployeeTable
                     currentData={currentData}
                     table={table}

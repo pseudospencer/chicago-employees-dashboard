@@ -162,7 +162,7 @@ class EmployeeFormView extends Component {
 
         return (
             <div className="form-view-container">
-                <h3>Add New Employee</h3>
+                <h2>Add New Employee</h2>
                 <div className={messageType}>
                     {message}
                 </div>
