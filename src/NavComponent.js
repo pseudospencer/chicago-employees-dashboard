@@ -5,6 +5,7 @@ const NavComponent = (props) => {
     return(
         <nav>
             <a href="#" onClick={handleNavViewEmployees}>View Employees</a>
+            {'   '}
             <a href="#" onClick={handleNavAddEmployee}>Add Employee</a>
         </nav>
     )

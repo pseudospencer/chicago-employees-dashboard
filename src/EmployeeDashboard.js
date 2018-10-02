@@ -170,40 +170,40 @@ class EmployeeDashboard extends Component {
         if (DEBUG_STATEMENTS) {
             console.log("createFilteredData");
         }
-        const { api, table } = this.state;
+        this.setState( state => {
 
-        if (table.filter !== DEFAULT_FILTER_VALUE) {
-            const filteredData = api.data.map( innerArray => {
-                return innerArray.filter( item => item.department === table.filter);
-            });
+            const { api, table } = state;
 
-            this.setState( state => {
-                return ({ api :
-                            {
-                            ...state.api,
-                            filteredData: filteredData,
-                            },
-                })
+            if (table.filter !== DEFAULT_FILTER_VALUE) {
+                const filteredData = api.data.map( innerArray => {
+                    return innerArray.filter( item => item.department === table.filter);
+                });
+
+            return ({ api :
+                        {
+                        ...state.api,
+                        filteredData: filteredData,
+                        },
+                    })
             }
-        )}
+        })
     }
     setDataPointer() {
-        const { api, table } = this.state;
-
-        let dataPointer;
-        if (table.filter === DEFAULT_FILTER_VALUE) {
-            dataPointer = "data";
-        } else {
-            dataPointer = "filteredData";
-        }
-
-        if (DEBUG_STATEMENTS) {
-            console.log("setDataPointer, new pointer=", dataPointer);
-        }
-
-        console.log("setDataPointer, new pointer=", dataPointer);
-
         this.setState( (state) => {
+
+            const { api, table } = state;
+
+            let dataPointer;
+            if (table.filter === DEFAULT_FILTER_VALUE) {
+                dataPointer = "data";
+            } else {
+                dataPointer = "filteredData";
+            }
+
+            if (DEBUG_STATEMENTS) {
+                console.log("setDataPointer, new pointer=", dataPointer);
+            }
+
             return ({
                     api : {
                         ...state.api,
@@ -218,75 +218,76 @@ class EmployeeDashboard extends Component {
         if (DEBUG_STATEMENTS) {
             console.log("createTableDisplayPagesLookup");
         }
-        const { api, table } = this.state;
 
-        const currentDataPointer = api.currentDataPointer;
+        this.setState( state => {
 
-        // const currentData = api.data[api.currentDataIndex];
-        const currentData = api[currentDataPointer][api.currentDataIndex];
+            const { api, table } = state;
 
-        const numOfPages = Math.floor(currentData.length / table.pageLength);;
-        const remainder = currentData.length % table.pageLength;
-        let displayPagesLookup = [];
-        let startIndex;
-        let endIndex;
-        let minId;
-        let maxId;
+            const currentDataPointer = api.currentDataPointer;
+            const currentData = api[currentDataPointer][api.currentDataIndex];
 
-        for (let i = 0; i < numOfPages; i++) {
-            startIndex = table.pageLength * i;
-            endIndex = table.pageLength * (i + 1);
-            minId = currentData[startIndex].id;
-            maxId = currentData[endIndex - 1].id;
-            displayPagesLookup = [...displayPagesLookup,
-                    {
-                        startIndex: startIndex,
-                        endIndex: endIndex,
-                        minId: minId,
-                        maxId: maxId,
-                    }
-                ];
-        }
-        if ( remainder > 0 ) {
-            startIndex = table.pageLength * numOfPages;
-            endIndex = currentData.length;
-            minId = currentData[startIndex].id;
-            maxId = currentData[endIndex - 1].id;
-            displayPagesLookup = [...displayPagesLookup,
-                    {
-                        startIndex: startIndex,
-                        endIndex: endIndex,
-                        minId: minId,
-                        maxId: maxId,
-                    }
-                ];
-        }
+            const numOfPages = Math.floor(currentData.length / table.pageLength);;
+            const remainder = currentData.length % table.pageLength;
+            let displayPagesLookup = [];
+            let startIndex;
+            let endIndex;
+            let minId;
+            let maxId;
 
-        if (DEBUG_STATEMENTS) {
+            for (let i = 0; i < numOfPages; i++) {
+                startIndex = table.pageLength * i;
+                endIndex = table.pageLength * (i + 1);
+                minId = currentData[startIndex].id;
+                maxId = currentData[endIndex - 1].id;
+                displayPagesLookup = [...displayPagesLookup,
+                        {
+                            startIndex: startIndex,
+                            endIndex: endIndex,
+                            minId: minId,
+                            maxId: maxId,
+                        }
+                    ];
+            }
+            if ( remainder > 0 ) {
+                startIndex = table.pageLength * numOfPages;
+                endIndex = currentData.length;
+                minId = currentData[startIndex].id;
+                maxId = currentData[endIndex - 1].id;
+                displayPagesLookup = [...displayPagesLookup,
+                        {
+                            startIndex: startIndex,
+                            endIndex: endIndex,
+                            minId: minId,
+                            maxId: maxId,
+                        }
+                    ];
+            }
+
+            if (DEBUG_STATEMENTS) {
+                console.log("createTableDisplayPagesLookup, currentDataPointer=", currentDataPointer);
+            }
+
             console.log("createTableDisplayPagesLookup, currentDataPointer=", currentDataPointer);
-        }
 
-        console.log("createTableDisplayPagesLookup, currentDataPointer=", currentDataPointer);
-
-        if (currentDataPointer === "data") {
-            this.setState({
-                table: {
-                    ...table,
-                    maxPage: numOfPages,
-                    displayPagesLookup: displayPagesLookup,
-                }
-            });
-        }
-        else if (currentDataPointer === "filteredData") {
-            this.setState({
-                table: {
-                    ...table,
-                    maxPage: numOfPages,
-                    filteredDisplayPagesLookup: displayPagesLookup,
-                }
-            });
-        }
-
+            if (currentDataPointer === "data") {
+                return ({
+                    table: {
+                        ...table,
+                        maxPage: numOfPages,
+                        displayPagesLookup: displayPagesLookup,
+                    }
+                });
+            }
+            else if (currentDataPointer === "filteredData") {
+                return ({
+                    table: {
+                        ...table,
+                        maxPage: numOfPages,
+                        filteredDisplayPagesLookup: displayPagesLookup,
+                    }
+                });
+            }
+        })
     }
     setTablePageAndUiPage(newPage, newUiPage) {
         if (DEBUG_STATEMENTS) {
@@ -395,7 +396,7 @@ class EmployeeDashboard extends Component {
             const nextData = api.data[api.currentDataIndex + 1];
         }
         else {
-            const currentData = api.data[api.currentDataIndex];
+            const currentData = api[api.currentDataPointer][api.currentDataIndex];
             newFocusedEmployeeIndex = focusedEmployee.index + 1;
             this.setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
         }
@@ -410,7 +411,7 @@ class EmployeeDashboard extends Component {
             this.setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, prevData);
         }
         else {
-            const currentData = api.data[api.currentDataIndex];
+            const currentData = api[api.currentDataPointer][api.currentDataIndex];
             newFocusedEmployeeIndex = focusedEmployee.index - 1;
             this.setFocusedEmployeeIndexAndId(newFocusedEmployeeIndex, currentData);
         }
@@ -650,13 +651,10 @@ class EmployeeDashboard extends Component {
             )
         }
         else if (api.dataIsLoaded === true) {
-            const currentData = api.data[api.currentDataIndex];
 
-            const currentDataBasedOnFilter =
-                table.filter !== DEFAULT_FILTER_VALUE &&
-                api.filteredData !== null ?
-                api.filteredData[api.currentDataIndex] :
-                api.data[api.currentDataIndex];
+            const currentData =
+                api[api.currentDataPointer][api.currentDataIndex];
+
 
 
             const paginateApiButtons = (
@@ -675,7 +673,7 @@ class EmployeeDashboard extends Component {
                         {nav}
                         <EmployeeTableView
                             // currentData={currentData}
-                            currentData={currentDataBasedOnFilter}
+                            currentData={currentData}
                             table={table}
                             focusedEmployee={focusedEmployee}
                             incrementTablePage={this.handleIncrementTablePageButton}
@@ -693,7 +691,7 @@ class EmployeeDashboard extends Component {
                         {nav}
                         <EmployeeDetailView
                             // currentData={currentData}
-                            currentData={currentDataBasedOnFilter}
+                            currentData={currentData}
                             focusedEmployee={focusedEmployee}
                             handleBackButton={this.handleDetailViewBackButton}
                         />
@@ -707,13 +705,13 @@ class EmployeeDashboard extends Component {
                         {nav}
                         <EmployeeDetailView
                             // currentData={currentData}
-                            currentData={currentDataBasedOnFilter}
+                            currentData={currentData}
                             focusedEmployee={focusedEmployee}
                             handleBackButton={this.handleDetailViewBackButton}
                         />
                         <EmployeeTableView
                             // currentData={currentData}
-                            currentData={currentDataBasedOnFilter}
+                            currentData={currentData}
                             table={table}
                             focusedEmployee={focusedEmployee}
                             incrementTablePage={this.handleIncrementTablePageButton}
