@@ -8,7 +8,7 @@ function TableRow(props) {
     const activeRow = id === focusedEmployeeId ? "info" : '';
     return (
         <tr key={id} className={activeRow}>
-            <td onClick={ () => handleNameClick(index) }>{name}</td>
+            <td onClick={ () => handleNameClick(index) }><a href="javascript:;">{name}</a></td>
             <td>{jobTitle}</td>
             <td>{department}</td>
         </tr>

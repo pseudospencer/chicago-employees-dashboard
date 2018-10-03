@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Button } from 'react-bootstrap';
+import EmployeeDetailViewHeader from "./EmployeeDetailViewHeaderComponent"
 
 class EmployeeDetailView extends Component {
     render() {
@@ -8,7 +9,7 @@ class EmployeeDetailView extends Component {
         if (focused) {
             return (
                 <div id="employee-detail-view">
-                    <h2>Employee Details</h2>
+                    <EmployeeDetailViewHeader />
                     <div className="employee-info">
                         <p>Employee name: {focused.name}</p>
                         <p>Employee ID: {focused.id}</p>
@@ -16,7 +17,7 @@ class EmployeeDetailView extends Component {
                         <p>Job Title: {focused.job_titles}</p>
                         <p>Salary: {focused.employee_annual_salary}</p>
                     </div>
-                    <Button onClick={handleBackButton}>Back</Button>
+                    <Button onClick={handleBackButton}>Back to list</Button>
                 </div>
             );
         }

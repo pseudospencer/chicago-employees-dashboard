@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Pager, Form, FormGroup, ControlLabel, FormControl } from 'react-bootstrap';
+import EmployeeTableViewHeader from "./EmployeeTableViewHeaderComponent"
 import EmployeeTable from "./EmployeeTableComponent";
 import departmentNames from "./DepartmentNames"
 
@@ -26,7 +27,7 @@ class EmployeeTableView extends Component {
 
         const filterSelect = (
             <div>
-                <FormGroup controlID="department-filter">
+                <FormGroup controlId="department-filter">
                     <ControlLabel htmlFor="department-filter">Filter by department</ControlLabel>
                     {"  "}
                     <FormControl
@@ -41,7 +42,8 @@ class EmployeeTableView extends Component {
 
         return(
             <div id="employee-table-view">
-                <h2>List of City Of Chicago Employees</h2>
+                {/* <h2>List of City of Chicago Employees</h2> */}
+                <EmployeeTableViewHeader />
                 {filterSelect}
                 {paginateTableUi}
                 <EmployeeTable

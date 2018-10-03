@@ -3,7 +3,7 @@ import { PageHeader } from 'react-bootstrap';
 
 const HeaderComponent = (props) => {
     return (
-        <PageHeader>City Of Chicago Employees Dashboard</PageHeader>
+        <PageHeader>City of Chicago Employees Dashboard</PageHeader>
     );
 }
 

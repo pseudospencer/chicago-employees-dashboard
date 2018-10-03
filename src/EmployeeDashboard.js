@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Alert } from 'react-bootstrap';
 import EmployeeTableView from "./EmployeeTableView";
 import EmployeeDetailView from "./EmployeeDetailView";
 import EmployeeFormView from "./EmployeeFormView";
@@ -630,7 +631,7 @@ class EmployeeDashboard extends Component {
             return(
                 <div id="employee-dashboard">
                     <HeaderComponent />
-                    <p>Failed to fetch data... are you sure you are connected to the internet?</p>
+                    <Alert bsStyle="warning">Failed to fetch data... are you sure you are connected to the internet?</Alert>
                 </div>
             )
         }
@@ -647,8 +648,7 @@ class EmployeeDashboard extends Component {
             return(
                 <div id="employee-dashboard">
                     <HeaderComponent />
-                    {nav}
-                    <p>Loading</p>
+                    <Alert bsStyle="info">Loading Employee data...</Alert>
                 </div>
             )
         }

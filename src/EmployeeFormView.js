@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { Formik, Field, Form, ErrorMessage } from "formik";
+import { Formik, Field, Form, ErrorMessage, } from "formik";
 import * as Yup from "yup";
+import { Button, Alert, } from 'react-bootstrap';
 import departmentNames from "./DepartmentNames"
 
 class EmployeeFormView extends Component {
@@ -35,7 +36,7 @@ class EmployeeFormView extends Component {
                     console.log( 'Success:', JSON.stringify(result) );
                     resetForm();
                     this.setState({
-                        message : "Success!",
+                        message : "Successfully added employee!",
                         messageType : "success"
                     })
                     setTimeout( () => {
@@ -49,7 +50,7 @@ class EmployeeFormView extends Component {
                     console.error('Error:', error);
                     this.setState({
                         message : "Error... are you sure you are connected to the internet?",
-                        messageType : "failure",
+                        messageType : "warning",
                     })
                     setSubmitting(false);
                 }
@@ -104,57 +105,69 @@ class EmployeeFormView extends Component {
                 .required("Salary is required!"),
         });
 
-        const renderForm = ({ errors, touched, isSubmitting }) => (
+        const renderForm = ({ values,
+                            errors,
+                            touched,
+                            handleChange,
+                            handleBlur,
+                            handleSubmit,
+                            isSubmitting,
+                            validateField,
+        }) => (
             <Form>
-                <div className="form-row">
+                <div className="form-group">
                     <div className="form-field">
                         <label htmlFor="firstName">First Name</label>
-                        <Field name="firstName" placeholder="ex: Afua"/>
+                        <Field className="form-control" name="firstName" placeholder="ex: Afua"/>
                     </div>
-                    <ErrorMessage name="firstName"/>
+                    { touched.firstName && errors.firstName && <Alert bsStyle="warning">{errors.firstName}</Alert>}
                 </div>
-                <div className="form-row">
+
+                <div className="form-group">
                     <div className="form-field">
                         <label htmlFor="lastName">Last Name</label>
-                        <Field name="lastName" placeholder="ex: Takashiro"/>
+                        <Field name="lastName" className="form-control" placeholder="ex: Takashiro"/>
                     </div>
-                    <ErrorMessage name="lastName"/>
+                    { touched.lastName && errors.lastName && <Alert bsStyle="warning">{errors.lastName}</Alert>}
                 </div>
-                <div className="form-row">
+
+                <div className="form-group">
                     <div className="form-field">
                         <label htmlFor="middleInitial">Middle Initial</label>
-                        <Field name="middleInitial" placeholder="ex: Q"/>
+                        <Field name="middleInitial" className="form-control" placeholder="ex: Q"/>
                     </div>
-                    <ErrorMessage name="middleInitial"/>
+                    { touched.middleInitial && errors.middleInitial && <Alert bsStyle="warning">{errors.middleInitial}</Alert> }
                 </div>
-                <div className="form-row">
+
+                <div className="form-group">
                     <div className="form-field">
                         <label htmlFor="department">Department</label>
-                        <Field name="department" placeholder="Choose Department" component='select'>
+                        <Field name="department" className="form-control" placeholder="Choose Department" component='select'>
                             {departmentSelectOptions}
                         </Field>
                     </div>
-                    <ErrorMessage name="department"/>
+                    { touched.department && errors.department && <Alert bsStyle="warning">{errors.department}</Alert> }
                 </div>
-                <div className="form-row">
+
+                <div className="form-group">
                     <div className="form-field">
                         <label htmlFor="jobTitle">Job Title</label>
-                        <Field name="jobTitle" placeholder="ex: Officer"/>
+                        <Field name="jobTitle" className="form-control" placeholder="ex: Officer"/>
                     </div>
-                    <ErrorMessage name="jobTitle"/>
+                    { touched.jobTitle && errors.jobTitle && <Alert bsStyle="warning">{errors.jobTitle}</Alert> }
                 </div>
-                <div className="form-row">
+
+                <div className="form-group">
                     <div className="form-field">
                         <label htmlFor="salary">Salary</label>
-                        <Field name="salary" placeholder="ex: 89000.00" validate={validateSalary}/>
+                        <Field name="salary" className="form-control" placeholder="ex: 89000.00" validate={validateSalary}/>
                     </div>
-                    <ErrorMessage name="salary"/>
+                    { touched.salary && errors.salary && <Alert bsStyle="warning">{errors.salary}</Alert> }
                 </div>
-                <div className="form-row">
-                    <button type="submit" disabled={isSubmitting}>
-                        Add employee
-                    </button>
-                </div>
+
+                <Button type="submit" disabled={isSubmitting}>
+                    { isSubmitting ? "Submitting..." : "Add employee" }
+                </Button>
             </Form>
         )
 
@@ -163,9 +176,7 @@ class EmployeeFormView extends Component {
         return (
             <div className="form-view-container">
                 <h2>Add New Employee</h2>
-                <div className={messageType}>
-                    {message}
-                </div>
+                { message && <Alert bsStyle={messageType}>{message}</Alert> }
                 <Formik
                     initialValues={initialValues}
                     validationSchema={validationSchema}
