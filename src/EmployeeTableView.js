@@ -42,7 +42,6 @@ class EmployeeTableView extends Component {
 
         return(
             <div id="employee-table-view">
-                {/* <h2>List of City of Chicago Employees</h2> */}
                 <EmployeeTableViewHeader />
                 {filterSelect}
                 {paginateTableUi}
